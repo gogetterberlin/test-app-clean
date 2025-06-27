@@ -15,15 +15,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div>
+    <div className="w-full px-0 md:px-0">
       <Stepper currentStep={step} />
       {step === 0 && (
         <>
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-2 md:px-8">
             <FileUpload label="Alte URLs (Excel/CSV)" onFileAccepted={setOldFile} />
             <FileUpload label="Neue URLs (Excel/CSV)" onFileAccepted={setNewFile} />
           </div>
-          <div className="mt-10 flex justify-end">
+          <div className="mt-10 flex justify-end w-full px-2 md:px-8">
             <button
               className="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold shadow disabled:opacity-40 transition"
               disabled={!oldFile || !newFile}

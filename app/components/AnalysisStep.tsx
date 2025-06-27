@@ -77,9 +77,9 @@ export function AnalysisStep({ onDone }: { onDone?: () => void }) {
   }, [phase, onDone]);
 
   return (
-    <div className="max-w-xl mx-auto flex flex-col items-center gap-10 py-16">
+    <div className="flex flex-col items-center gap-10 py-16 w-full px-0 md:px-0">
       {/* Progressbar */}
-      <div className="w-full">
+      <div className="w-full px-2 md:px-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-indigo-600">Analyse läuft…</span>
           <span className="text-xs text-gray-400">{progress}%</span>
@@ -101,12 +101,12 @@ export function AnalysisStep({ onDone }: { onDone?: () => void }) {
         </div>
       </div>
       {/* Phase-Text */}
-      <div className="text-center">
+      <div className="text-center w-full px-2 md:px-8">
         <div className="text-lg font-semibold text-indigo-700 mb-1 animate-pulse">{phases[phase].label}</div>
         <div className="text-sm text-gray-500">{phases[phase].description}</div>
       </div>
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-6 w-full">
+      <div className="grid grid-cols-2 gap-6 w-full px-2 md:px-8">
         <StatCard label="Alte URLs" value={stats.oldUrls} />
         <StatCard label="Gefundene Matches" value={stats.matches} />
         <StatCard label="Ø Confidence" value={stats.confidence + '%'} />
@@ -114,7 +114,7 @@ export function AnalysisStep({ onDone }: { onDone?: () => void }) {
         <StatCard label="Fuzzy Matches" value={stats.fuzzy} />
       </div>
       {/* Trust & Info */}
-      <div className="flex flex-col items-center gap-2 mt-4">
+      <div className="flex flex-col items-center gap-2 mt-4 w-full px-2 md:px-8">
         <div className="flex items-center gap-2 text-xs text-gray-400">
           <svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8" fill="#6366f1"/><path d="M8 4v4l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
           AI powered by OpenAI
@@ -123,7 +123,7 @@ export function AnalysisStep({ onDone }: { onDone?: () => void }) {
       </div>
       {/* Abschluss-Glow */}
       {done && (
-        <div className="mt-8 animate-glow text-center">
+        <div className="mt-8 animate-glow text-center w-full px-2 md:px-8">
           <div className="text-2xl font-bold text-pink-600 mb-2">Analyse abgeschlossen!</div>
           <div className="text-sm text-gray-500">Die Ergebnisse sind bereit. Du kannst jetzt fortfahren.</div>
         </div>

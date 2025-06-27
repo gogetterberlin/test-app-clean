@@ -119,9 +119,9 @@ export function ResultDashboard() {
   const confidence = useCountUp(stats.confidence);
 
   return (
-    <div className="flex flex-col gap-12 py-12">
+    <div className="flex flex-col gap-12 py-12 w-full px-0 md:px-0">
       {/* Stats-Header */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6 w-full px-2 md:px-8">
         <StatCard label="Total" value={total} />
         <StatCard label="Exact" value={exact} badge="Exact" icon={<span title="Exakte Matches">✅</span>} />
         <StatCard label="Fuzzy" value={fuzzy} badge="Fuzzy" icon={<span title="Fuzzy Matches">✨</span>} />
@@ -129,7 +129,7 @@ export function ResultDashboard() {
         <StatCard label="Ø Confidence" value={confidence + '%'} confidence={confidence} tooltip="Durchschnittlicher AI-Confidence-Score" />
       </div>
       {/* Export-Tabs */}
-      <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
+      <div className="bg-white rounded-xl shadow p-6 border border-gray-100 w-full px-2 md:px-8">
         <div className="flex gap-4 mb-4 items-end">
           {exportTabs.map(tab => (
             <button
@@ -169,7 +169,7 @@ export function ResultDashboard() {
         {copySuccess && <div className="mt-2 text-green-600 text-xs animate-pulse">In Zwischenablage kopiert!</div>}
       </div>
       {/* Mapping-Tabelle */}
-      <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
+      <div className="bg-white rounded-xl shadow p-6 border border-gray-100 w-full px-2 md:px-8">
         <div className="flex flex-wrap items-center mb-4 gap-4">
           <input
             type="text"
@@ -285,7 +285,7 @@ export function ResultDashboard() {
         )}
       </div>
       {/* Footer Branding */}
-      <footer className="mt-8 text-center text-xs text-gray-400 flex flex-col items-center gap-1">
+      <footer className="mt-8 text-center text-xs text-gray-400 flex flex-col items-center gap-1 w-full px-2 md:px-8">
         <span>Powered by <span className="font-semibold text-indigo-500">OpenAI</span> & modern SaaS-UX</span>
         <a href="#" className="underline hover:text-indigo-600">Datenschutz</a>
       </footer>
