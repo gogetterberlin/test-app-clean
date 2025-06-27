@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase/client";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { readExcelFile, validateUrls } from "./utils/excel";
+import type { UrlMapping } from "./utils/types";
 
 const TABS = [
   { key: "upload", label: "Upload & Start" },
@@ -38,6 +39,7 @@ export default function Home() {
   const [dragActiveNew, setDragActiveNew] = useState(false);
   const oldInputRef = useRef<HTMLInputElement>(null);
   const newInputRef = useRef<HTMLInputElement>(null);
+  const [search, setSearch] = useState("");
 
   const handleStartBatch = async () => {
     setFeedback(null);
@@ -322,118 +324,147 @@ export default function Home() {
         </section>
       )}
       {activeTab === "result" && (
-        <section className="py-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Ergebnis & Redirect-Mapping</h2>
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-2 mb-6 justify-center">
-              <button onClick={() => setResultTab("mapping")}
-                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "mapping" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Redirect-Mapping</button>
-              <button onClick={() => setResultTab("old")}
-                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "old" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Details alte URLs</button>
-              <button onClick={() => setResultTab("new")}
-                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "new" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Details neue URLs</button>
-              <button onClick={() => setResultTab("download")}
-                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "download" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Download</button>
+        <section className="w-full min-h-[60vh] flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-blue-50 to-white py-12 px-0">
+          <div className="w-full flex flex-col items-center">
+            <h2 className="text-3xl font-extrabold mb-8 text-indigo-700 tracking-tight">Redirect Mapping Results</h2>
+            {/* Stats-Header */}
+            <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-6 mb-10">
+              <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center border-t-4 border-indigo-400 animate-fade-in">
+                <span className="text-3xl font-extrabold text-indigo-600">{redirects.length}</span>
+                <span className="text-xs text-slate-500 mt-2">Total URLs</span>
+              </div>
+              <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center border-t-4 border-green-400 animate-fade-in">
+                <span className="text-3xl font-extrabold text-green-600">{redirects.filter(r => r.match_type === 'exact').length}</span>
+                <span className="text-xs text-slate-500 mt-2">Exact Matches</span>
+              </div>
+              <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center border-t-4 border-yellow-400 animate-fade-in">
+                <span className="text-3xl font-extrabold text-yellow-500">{redirects.filter(r => r.match_type === 'fuzzy').length}</span>
+                <span className="text-xs text-slate-500 mt-2">Fuzzy Matches</span>
+              </div>
+              <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center border-t-4 border-red-400 animate-fade-in">
+                <span className="text-3xl font-extrabold text-red-500">{redirects.filter(r => r.match_type === 'manual').length}</span>
+                <span className="text-xs text-slate-500 mt-2">Manual Review</span>
+              </div>
+              <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center border-t-4 border-blue-400 animate-fade-in">
+                <span className="text-3xl font-extrabold text-blue-600">{redirects.length ? `${Math.round((redirects.reduce((acc, r) => acc + (r.confidence_score || 0), 0) / redirects.length) * 100)}%` : '-'}</span>
+                <span className="text-xs text-slate-500 mt-2">Avg. Confidence</span>
+              </div>
             </div>
-            {loadingResults && <div className="text-indigo-500">Lade Ergebnisse...</div>}
-            {!loadingResults && resultTab === "mapping" && (
-              <div className="overflow-x-auto rounded-xl shadow bg-white dark:bg-slate-900">
+            {/* Export-Tabs */}
+            <div className="w-full flex flex-col items-center mb-10">
+              <div className="flex gap-2 mb-4">
+                <button onClick={() => setResultTab("htaccess")}
+                  className={`px-6 py-2 rounded-t-xl font-semibold text-base transition-colors duration-150 ${resultTab === "htaccess" ? "bg-indigo-600 text-white shadow" : "bg-slate-100 text-slate-600"}`}>.htaccess</button>
+                <button onClick={() => setResultTab("nginx")}
+                  className={`px-6 py-2 rounded-t-xl font-semibold text-base transition-colors duration-150 ${resultTab === "nginx" ? "bg-indigo-600 text-white shadow" : "bg-slate-100 text-slate-600"}`}>Nginx</button>
+                <button onClick={() => setResultTab("csv")}
+                  className={`px-6 py-2 rounded-t-xl font-semibold text-base transition-colors duration-150 ${resultTab === "csv" ? "bg-indigo-600 text-white shadow" : "bg-slate-100 text-slate-600"}`}>CSV/Excel</button>
+              </div>
+              <div className="w-full bg-white rounded-xl shadow p-6 border border-slate-100 animate-fade-in">
+                {resultTab === "htaccess" && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-700">Export .htaccess</span>
+                      <button className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-4 py-1 rounded shadow hover:scale-105 transition" onClick={() => navigator.clipboard.writeText(generateHtaccess(redirects))}>Copy</button>
+                    </div>
+                    <pre className="bg-slate-900 text-green-200 rounded p-4 overflow-x-auto text-xs font-mono shadow-inner">{generateHtaccess(redirects)}</pre>
+                  </div>
+                )}
+                {resultTab === "nginx" && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-700">Export Nginx</span>
+                      <button className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-4 py-1 rounded shadow hover:scale-105 transition" onClick={() => navigator.clipboard.writeText(generateNginx(redirects))}>Copy</button>
+                    </div>
+                    <pre className="bg-slate-900 text-blue-200 rounded p-4 overflow-x-auto text-xs font-mono shadow-inner">{generateNginx(redirects)}</pre>
+                  </div>
+                )}
+                {resultTab === "csv" && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-700">Export CSV/Excel</span>
+                      <button className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-4 py-1 rounded shadow hover:scale-105 transition" onClick={() => navigator.clipboard.writeText(generateCSV(redirects))}>Copy</button>
+                    </div>
+                    <pre className="bg-slate-900 text-yellow-200 rounded p-4 overflow-x-auto text-xs font-mono shadow-inner">{generateCSV(redirects)}</pre>
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Mapping-Tabelle (edge-to-edge, modern) */}
+            <div className="w-full bg-white rounded-2xl shadow-xl p-6 border border-slate-100 animate-fade-in">
+              <div className="flex justify-between items-center mb-4">
+                <span className="font-semibold text-lg text-slate-700">Redirect Mappings</span>
+                <input type="text" placeholder="Search..." className="border border-slate-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" onChange={e => setSearch(e.target.value)} />
+              </div>
+              <div className="overflow-x-auto">
                 <table className="min-w-full text-left text-sm">
                   <thead>
-                    <tr className="bg-slate-100 dark:bg-slate-800">
-                      <th className="px-4 py-2">Alte URL</th>
-                      <th className="px-4 py-2">Neue URL</th>
-                      <th className="px-4 py-2">Typ</th>
+                    <tr className="bg-slate-100">
+                      <th className="px-4 py-2">Old URL</th>
+                      <th className="px-4 py-2">New URL</th>
                       <th className="px-4 py-2">Confidence</th>
-                      <th className="px-4 py-2">Reasoning</th>
+                      <th className="px-4 py-2">Method</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {redirects.length === 0 && (
-                      <tr><td colSpan={5} className="text-slate-400 text-center py-8">Noch keine Redirects gefunden.</td></tr>
-                    )}
-                    {redirects.map(r => (
-                      <tr key={r.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                        <td className="px-4 py-2 break-all text-blue-700 dark:text-blue-300">{r.old_url?.url}</td>
-                        <td className="px-4 py-2 break-all text-green-700 dark:text-green-300">{r.new_url?.url}</td>
-                        <td className="px-4 py-2"><span className={`px-2 py-1 rounded text-xs font-semibold ${r.match_type === "ai" ? "bg-indigo-100 text-indigo-700" : r.match_type === "exact" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{r.match_type}</span></td>
-                        <td className="px-4 py-2">{r.confidence_score ? r.confidence_score.toFixed(2) : "-"}</td>
-                        <td className="px-4 py-2 max-w-xs truncate" title={r.match_reasoning}>{r.match_reasoning || "-"}</td>
+                    {redirects.filter(r => filterRedirect(r, search)).map(r => (
+                      <tr key={r.id} className="border-b border-slate-100 hover:bg-indigo-50 transition">
+                        <td className="px-4 py-2 break-all text-blue-700"><a href={r.old_url?.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{r.old_url?.url}</a></td>
+                        <td className="px-4 py-2 break-all text-green-700"><a href={r.new_url?.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{r.new_url?.url}</a></td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
+                              <div className={`h-2 rounded-full ${r.confidence_score > 0.8 ? 'bg-green-400' : r.confidence_score > 0.5 ? 'bg-yellow-400' : 'bg-red-400'}`} style={{ width: `${Math.round((r.confidence_score || 0) * 100)}%` }} />
+                            </div>
+                            <span className="text-xs font-bold">{r.confidence_score ? `${Math.round((r.confidence_score || 0) * 100)}%` : '-'}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${r.match_type === "ai" ? "bg-indigo-100 text-indigo-700" : r.match_type === "exact" ? "bg-green-100 text-green-700" : r.match_type === "fuzzy" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>{r.match_type}</span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            )}
-            {!loadingResults && resultTab === "old" && (
-              <div className="overflow-x-auto rounded-xl shadow bg-white dark:bg-slate-900">
-                <table className="min-w-full text-left text-sm">
-                  <thead>
-                    <tr className="bg-slate-100 dark:bg-slate-800">
-                      <th className="px-4 py-2">Alte URL</th>
-                      <th className="px-4 py-2">Title</th>
-                      <th className="px-4 py-2">Meta</th>
-                      <th className="px-4 py-2">H1</th>
-                      <th className="px-4 py-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {oldUrlDetails.length === 0 && (
-                      <tr><td colSpan={5} className="text-slate-400 text-center py-8">Keine Daten.</td></tr>
-                    )}
-                    {oldUrlDetails.map(u => (
-                      <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                        <td className="px-4 py-2 break-all">{u.url}</td>
-                        <td className="px-4 py-2">{u.title || "-"}</td>
-                        <td className="px-4 py-2">{u.meta_description || "-"}</td>
-                        <td className="px-4 py-2">{u.h1_heading || "-"}</td>
-                        <td className="px-4 py-2">{u.status_code || "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="flex items-center gap-2 mt-4">
+                <span className="text-xs text-slate-400">Powered by</span>
+                <img src="https://cdn.openai.com/logo/openai-mark.svg" alt="OpenAI" className="h-5" />
+                <span className="text-xs text-slate-500 font-semibold">OpenAI</span>
               </div>
-            )}
-            {!loadingResults && resultTab === "new" && (
-              <div className="overflow-x-auto rounded-xl shadow bg-white dark:bg-slate-900">
-                <table className="min-w-full text-left text-sm">
-                  <thead>
-                    <tr className="bg-slate-100 dark:bg-slate-800">
-                      <th className="px-4 py-2">Neue URL</th>
-                      <th className="px-4 py-2">Title</th>
-                      <th className="px-4 py-2">Meta</th>
-                      <th className="px-4 py-2">H1</th>
-                      <th className="px-4 py-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {newUrlDetails.length === 0 && (
-                      <tr><td colSpan={5} className="text-slate-400 text-center py-8">Keine Daten.</td></tr>
-                    )}
-                    {newUrlDetails.map(u => (
-                      <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                        <td className="px-4 py-2 break-all">{u.url}</td>
-                        <td className="px-4 py-2">{u.title || "-"}</td>
-                        <td className="px-4 py-2">{u.meta_description || "-"}</td>
-                        <td className="px-4 py-2">{u.h1_heading || "-"}</td>
-                        <td className="px-4 py-2">{u.status_code || "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {!loadingResults && resultTab === "download" && (
-              <div className="flex flex-col items-center py-12">
-                <button className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg font-semibold text-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                  Download als CSV (coming soon)
-                </button>
-                <div className="text-slate-400 mt-4">Export-Funktion folgt ...</div>
-              </div>
-            )}
+            </div>
           </div>
         </section>
       )}
     </div>
+  );
+}
+
+// Hilfsfunktionen für Export & Filter
+type Redirect = {
+  id: string;
+  old_url: { url: string };
+  new_url: { url: string };
+  confidence_score: number;
+  match_type: string;
+};
+
+function generateHtaccess(redirects: Redirect[]): string {
+  return `# 301 Redirects for SEO Relaunch\n# Generated by SEO Redirect Generator\n\n` +
+    redirects.map((r) => `Redirect 301 ${r.old_url?.url} ${r.new_url?.url}`).join("\n");
+}
+function generateNginx(redirects: Redirect[]): string {
+  return `# 301 Redirects for SEO Relaunch\n# Generated by SEO Redirect Generator\n\n` +
+    redirects.map((r) => `rewrite ^${r.old_url?.url}$ ${r.new_url?.url} permanent;`).join("\n");
+}
+function generateCSV(redirects: Redirect[]): string {
+  return 'Old URL,New URL,Confidence,Method\n' +
+    redirects.map((r) => `${r.old_url?.url},${r.new_url?.url},${Math.round((r.confidence_score || 0) * 100)}%,${r.match_type}`).join("\n");
+}
+function filterRedirect(r: Redirect, search: string): boolean {
+  if (!search) return true;
+  return (
+    r.old_url?.url?.toLowerCase().includes(search.toLowerCase()) ||
+    r.new_url?.url?.toLowerCase().includes(search.toLowerCase())
   );
 }
