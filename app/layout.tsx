@@ -1,14 +1,32 @@
 import './globals.css';
+import type { Metadata } from 'next';
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: 'SEO 301 Redirect Tool',
+  description: 'Modernes SaaS-Tool für Website-Relaunches',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="de">
-      <body className="bg-gray-50 min-h-screen text-gray-900">
-        <header className="p-4 bg-white shadow">
-          <h1 className="text-xl font-bold">SEO Redirect Generator</h1>
+      <body className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 text-gray-900">
+        <header className="w-full py-8 px-4 md:px-12 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div className="text-2xl font-extrabold tracking-tight">SEO 301 Redirect Tool</div>
+            <div className="text-xs opacity-80">Powered by OpenAI</div>
+          </div>
         </header>
-        <main className="max-w-4xl mx-auto p-4">{children}</main>
-        <footer className="p-4 text-center text-xs text-gray-400">© {new Date().getFullYear()} SEO Redirect Generator</footer>
+        <main className="max-w-5xl mx-auto px-4 md:px-12 py-12">
+          {/* Stepper Platzhalter */}
+          <div className="mb-12">
+            {/* <Stepper /> */}
+          </div>
+          {children}
+        </main>
       </body>
     </html>
   );
