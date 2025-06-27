@@ -119,7 +119,7 @@ export function ResultDashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-12 py-12 w-full px-0 md:px-0">
+    <div className="flex flex-col gap-16 py-20 w-full min-h-[70vh] bg-gradient-to-br from-indigo-50 via-white to-pink-50 px-0 md:px-0">
       {/* Batch-Selector */}
       <div className="flex flex-wrap items-center gap-4 w-full px-2 md:px-8 mb-4">
         <label className="font-semibold text-slate-700">Batch:</label>
@@ -135,32 +135,37 @@ export function ResultDashboard() {
         {loading && <span className="text-xs text-indigo-500 animate-pulse">Lade Daten…</span>}
       </div>
       {/* Stats-Header */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6 w-full px-2 md:px-8">
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
         <StatCard label="Total" value={total} />
         <StatCard label="Exact" value={exact} badge="Exact" icon={<span title="Exakte Matches">✅</span>} />
         <StatCard label="Fuzzy" value={fuzzy} badge="Fuzzy" icon={<span title="Fuzzy Matches">✨</span>} />
         <StatCard label="Manual" value={manual} badge="Manual" icon={<span title="Manuell zugeordnet">🖐️</span>} />
         <StatCard label="Ø Confidence" value={confidence + '%'} confidence={confidence} tooltip="Durchschnittlicher AI-Confidence-Score" />
       </div>
-      {/* Export-Tabs */}
-      <div className="bg-white rounded-xl shadow p-6 border border-gray-100 w-full px-2 md:px-8">
-        <div className="flex gap-4 mb-4 items-end">
+      {/* Export-Tabs als Segmented Controls */}
+      <div className="w-full max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border-2 border-gray-100 flex flex-col gap-6 items-center">
+        <div className="flex gap-4 mb-4 items-center justify-center w-full">
           {(['htaccess', 'nginx', 'csv'] as ExportTabKey[]).map(tab => (
             <button
               key={tab}
-              className={`px-4 py-2 rounded-t font-medium transition-all duration-150 border-b-2 ${
-                activeTab === tab
-                  ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
-                  : 'border-transparent text-gray-400 hover:text-indigo-500'
-              }`}
+              className={`px-8 py-3 rounded-2xl text-lg font-bold transition-all duration-200 border-2 shadow-sm
+                ${activeTab === tab
+                  ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white border-indigo-400 scale-105 shadow-xl'
+                  : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600'}
+              `}
               onClick={() => setActiveTab(tab)}
             >
               {tab === 'htaccess' ? '.htaccess' : tab === 'nginx' ? 'Nginx' : 'CSV/Excel'}
             </button>
           ))}
-          <div className="ml-auto flex gap-2">
+        </div>
+        <div className="w-full flex flex-col gap-4 items-center">
+          <pre className="bg-gray-50 rounded-xl p-6 text-base font-mono overflow-x-auto border border-gray-100 transition-all duration-150 w-full min-h-[180px] text-gray-700 shadow-inner">
+            {exports[activeTab]}
+          </pre>
+          <div className="flex gap-4 w-full justify-end">
             <button
-              className={`px-3 py-1 rounded flex items-center gap-1 bg-indigo-100 text-indigo-600 text-xs font-semibold hover:bg-indigo-200 transition ${copySuccess ? 'animate-pulse' : ''}`}
+              className={`px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-indigo-400 text-white text-lg font-bold shadow-xl hover:scale-105 hover:shadow-2xl transition ${copySuccess ? 'animate-pulse' : ''}`}
               onClick={() => handleCopy(exports[activeTab])}
               title="In Zwischenablage kopieren"
             >
@@ -169,75 +174,70 @@ export function ResultDashboard() {
             <a
               href={`data:text/plain;charset=utf-8,${encodeURIComponent(exports[activeTab])}`}
               download={`redirects.${activeTab === 'csv' ? 'csv' : 'txt'}`}
-              className="px-3 py-1 rounded bg-gray-100 text-gray-500 text-xs font-semibold hover:bg-gray-200 transition"
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-lg font-bold shadow-xl hover:scale-105 hover:shadow-2xl transition"
               title="Datei herunterladen"
             >
               ⬇️ Download
             </a>
           </div>
         </div>
-        <div className="text-xs text-gray-400 mb-2">Exportiere deine Redirects für verschiedene Systeme.</div>
-        <pre className="bg-gray-50 rounded p-4 text-xs font-mono overflow-x-auto border border-gray-100 transition-all duration-150">
-          {exports[activeTab]}
-        </pre>
-        {copySuccess && <div className="mt-2 text-green-600 text-xs animate-pulse">In Zwischenablage kopiert!</div>}
       </div>
-      {/* Mapping-Tabelle */}
-      <div className="bg-white rounded-xl shadow p-6 border border-gray-100 w-full px-2 md:px-8">
-        <div className="flex flex-wrap items-center mb-4 gap-4">
+      {/* Mapping-Tabelle als Card */}
+      <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border-2 border-gray-100 mt-12">
+        <div className="flex flex-wrap items-center mb-6 gap-4">
           <input
             type="text"
             placeholder="Suche alte oder neue URL…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-sm w-full md:w-72 transition"
+            className="px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-base w-full md:w-96 transition shadow-sm"
           />
           <div className="flex gap-2 flex-wrap">
             {mappingTypes.map(type => (
               <button
                 key={type}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-150 ${
-                  typeFilter === type
-                    ? 'bg-indigo-500 text-white border-indigo-500 shadow'
-                    : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600'
-                }`}
+                className={`px-4 py-2 rounded-full text-base font-semibold border-2 transition-all duration-150
+                  ${typeFilter === type
+                    ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white border-indigo-500 shadow'
+                    : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600'}
+                `}
                 onClick={() => setTypeFilter(type)}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>
-          <span className="text-xs text-gray-400 ml-auto">{filteredMappings.length} Ergebnisse</span>
+          <span className="text-base text-gray-400 ml-auto">{filteredMappings.length} Ergebnisse</span>
         </div>
         <div className="overflow-x-auto max-h-[340px]">
-          <table className="min-w-full text-sm sticky-header">
+          <table className="min-w-full text-base sticky-header">
             <thead className="sticky top-0 bg-white z-10 shadow-sm">
               <tr className="text-gray-500 border-b">
-                <th className="py-2 px-3 text-left">Alte URL</th>
-                <th className="py-2 px-3 text-left">Neue URL</th>
-                <th className="py-2 px-3 text-left">Typ</th>
-                <th className="py-2 px-3 text-left">Confidence</th>
-                <th className="py-2 px-3 text-left">AI</th>
-                <th className="py-2 px-3 text-left"></th>
+                <th className="py-3 px-4 text-left">Old URL</th>
+                <th className="py-3 px-4 text-left">New URL</th>
+                <th className="py-3 px-4 text-left">Type</th>
+                <th className="py-3 px-4 text-left">Confidence</th>
+                <th className="py-3 px-4 text-left">AI</th>
+                <th className="py-3 px-4 text-left"></th>
               </tr>
             </thead>
             <tbody>
               {pagedMappings.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-400">
+                  <td colSpan={6} className="py-16 text-center text-gray-400 text-xl">
                     <div className="flex flex-col items-center gap-2">
-                      <span className="text-4xl">🔍</span>
+                      <span className="text-5xl">🔍</span>
                       <span>Keine Ergebnisse gefunden</span>
                     </div>
                   </td>
                 </tr>
-              ) : (
+              ) :
                 pagedMappings.map((m, i) => (
                   <tr key={i} className="border-b hover:bg-gradient-to-r hover:from-indigo-50 hover:to-pink-50 transition group">
-                    <td className="py-2 px-3 font-mono text-indigo-700">{m.old_url?.url}</td>
-                    <td className="py-2 px-3 font-mono text-pink-600">{m.new_url?.url}</td>
-                    <td className="py-2 px-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium
+                    <td className="py-3 px-4 font-mono text-indigo-700 text-base">{m.old_url?.url}</td>
+                    <td className="py-3 px-4 font-mono text-pink-600 text-base">{m.new_url?.url}</td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-base font-medium
                         ${m.match_type === 'exact' ? 'bg-emerald-100 text-emerald-700' :
                           m.match_type === 'fuzzy' ? 'bg-yellow-100 text-yellow-700' :
                           m.match_type === 'manual' ? 'bg-gray-100 text-gray-500' : 'bg-gray-100 text-gray-500'}
@@ -245,27 +245,27 @@ export function ResultDashboard() {
                         {m.match_type === 'exact' ? '✅' : m.match_type === 'fuzzy' ? '✨' : m.match_type === 'manual' ? '🖐️' : ''} {m.match_type}
                       </span>
                     </td>
-                    <td className="py-2 px-3">
+                    <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-gray-200 rounded" title={`AI-Confidence: ${Math.round((m.confidence_score || 0) * 100)}%`}>
+                        <div className="w-20 h-3 bg-gray-200 rounded" title={`AI-Confidence: ${Math.round((m.confidence_score || 0) * 100)}%`}>
                           <div
-                            className={`h-2 rounded ${m.confidence_score > 0.9 ? 'bg-emerald-400' : m.confidence_score > 0.8 ? 'bg-yellow-400' : 'bg-gray-400'}`}
+                            className={`h-3 rounded-full ${m.confidence_score > 0.9 ? 'bg-emerald-400' : m.confidence_score > 0.8 ? 'bg-yellow-400' : 'bg-gray-400'}`}
                             style={{ width: `${Math.round((m.confidence_score || 0) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500">{m.confidence_score ? `${Math.round((m.confidence_score || 0) * 100)}%` : '-'}</span>
+                        <span className="text-base text-gray-500 font-bold">{m.confidence_score ? `${Math.round((m.confidence_score || 0) * 100)}%` : '-'}</span>
                       </div>
                     </td>
-                    <td className="py-2 px-3">
+                    <td className="py-3 px-4">
                       {m.match_type !== 'manual' ? (
-                        <span className="inline-flex items-center gap-1 text-indigo-500 text-xs font-semibold" title="AI generiert"><svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8" fill="#6366f1"/><path d="M8 4v4l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>AI</span>
+                        <span className="inline-flex items-center gap-1 text-indigo-500 text-base font-semibold" title="AI generiert"><svg width="20" height="20" fill="none"><circle cx="10" cy="10" r="10" fill="#6366f1"/><path d="M10 5v5l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>AI</span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-gray-400 text-xs font-semibold" title="Manuell zugeordnet"><svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8" fill="#e5e7eb"/><path d="M8 4v4l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>Manuell</span>
+                        <span className="inline-flex items-center gap-1 text-gray-400 text-base font-semibold" title="Manuell zugeordnet"><svg width="20" height="20" fill="none"><circle cx="10" cy="10" r="10" fill="#e5e7eb"/><path d="M10 5v5l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>Manuell</span>
                       )}
                     </td>
-                    <td className="py-2 px-3">
+                    <td className="py-3 px-4">
                       <button
-                        className={`px-2 py-1 rounded bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition flex items-center gap-1 ${copySuccess ? 'animate-pulse' : ''} opacity-0 group-hover:opacity-100`}
+                        className={`px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 text-base font-semibold hover:bg-indigo-100 transition flex items-center gap-2 ${copySuccess ? 'animate-pulse' : ''} opacity-0 group-hover:opacity-100`}
                         onClick={() => handleCopy(`${m.old_url?.url} -> ${m.new_url?.url}`)}
                         title="Redirect kopieren"
                       >
@@ -275,21 +275,21 @@ export function ResultDashboard() {
                     </td>
                   </tr>
                 ))
-              )}
+              }
             </tbody>
           </table>
         </div>
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="flex justify-center gap-2 mt-8">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border transition-all duration-150 ${
-                  page === i + 1
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-semibold border-2 transition-all duration-150
+                  ${page === i + 1
                     ? 'bg-indigo-500 text-white border-indigo-500 shadow'
-                    : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600'
-                }`}
+                    : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600'}
+                `}
                 onClick={() => setPage(i + 1)}
               >
                 {i + 1}
@@ -314,7 +314,7 @@ export function ResultDashboard() {
         </div>
       )}
       {/* Footer Branding */}
-      <footer className="mt-8 text-center text-xs text-gray-400 flex flex-col items-center gap-1 w-full px-2 md:px-8">
+      <footer className="mt-16 text-center text-base text-gray-400 flex flex-col items-center gap-2 w-full px-2 md:px-8">
         <span>Powered by <span className="font-semibold text-indigo-500">OpenAI</span> & modern SaaS-UX</span>
         <a href="#" className="underline hover:text-indigo-600">Datenschutz</a>
       </footer>

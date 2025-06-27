@@ -17,6 +17,21 @@ export default function DashboardPage() {
   const [scrapingError, setScrapingError] = useState<string | null>(null);
   const [matching, setMatching] = useState(false);
   const [matchingError, setMatchingError] = useState<string | null>(null);
+  const [oldPreview, setOldPreview] = useState<string[]>([]);
+  const [newPreview, setNewPreview] = useState<string[]>([]);
+  const [maxRows, setMaxRows] = useState<number>(50);
+
+  // Preview URLs after file upload
+  const handleOldFile = async (file: File) => {
+    setOldFile(file);
+    const urls = validateUrls(await readExcelFile(file));
+    setOldPreview(urls.slice(0, 10));
+  };
+  const handleNewFile = async (file: File) => {
+    setNewFile(file);
+    const urls = validateUrls(await readExcelFile(file));
+    setNewPreview(urls.slice(0, 10));
+  };
 
   const handleNext = async () => {
     if (!oldFile || !newFile) return;
@@ -52,7 +67,7 @@ export default function DashboardPage() {
       const scrapeRes = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ batchId: data.batchId }),
+        body: JSON.stringify({ batchId: data.batchId, maxRows }),
       });
       const scrapeData = await scrapeRes.json();
       setScraping(false);
@@ -91,7 +106,7 @@ export default function DashboardPage() {
       const scrapeRes = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ batchId }),
+        body: JSON.stringify({ batchId, maxRows }),
       });
       const scrapeData = await scrapeRes.json();
       setScraping(false);
@@ -125,34 +140,66 @@ export default function DashboardPage() {
       <Stepper currentStep={step} />
       {step === 0 && (
         <>
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-2 md:px-8">
-            <FileUpload label="Alte URLs (Excel/CSV)" onFileAccepted={setOldFile} />
-            <FileUpload label="Neue URLs (Excel/CSV)" onFileAccepted={setNewFile} />
-          </div>
-          <div className="mt-10 flex flex-col items-end w-full px-2 md:px-8 gap-2">
-            {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-            {scrapingError && (
-              <div className="text-red-600 text-sm mb-2">
-                {scrapingError}
-                <button
-                  className="ml-4 px-3 py-1 rounded bg-indigo-100 text-indigo-600 text-xs font-semibold hover:bg-indigo-200 border border-indigo-200"
-                  onClick={handleRetryScraping}
-                >
-                  Erneut versuchen
-                </button>
+          <div className="flex flex-col items-center justify-center min-h-[60vh] w-full bg-gradient-to-br from-indigo-50 via-white to-pink-50 py-12">
+            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+                <FileUpload label="Alte URLs (Excel/CSV)" onFileAccepted={handleOldFile} />
+                <div className="mt-6 w-full">
+                  <div className="font-semibold text-gray-700 mb-2 text-center">Vorschau: Alte URLs</div>
+                  <ul className="bg-indigo-50 rounded-xl shadow-inner p-4 border border-indigo-100 text-xs max-h-40 overflow-auto">
+                    {oldPreview.length === 0 ? <li className="text-gray-400 italic">Keine Datei geladen</li> : oldPreview.map((url, i) => <li key={i} className="truncate text-indigo-700 font-mono">{url}</li>)}
+                  </ul>
+                </div>
               </div>
-            )}
-            {matchingError && <div className="text-red-600 text-sm mb-2">{matchingError}</div>}
-            <button
-              className="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold shadow disabled:opacity-40 transition"
-              disabled={!oldFile || !newFile || loading || scraping || matching}
-              onClick={handleNext}
-            >
-              {loading ? 'Batch wird angelegt…'
-                : scraping ? 'Daten werden extrahiert…'
-                : matching ? 'Matching läuft…'
-                : 'Weiter zur Analyse'}
-            </button>
+              <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+                <FileUpload label="Neue URLs (Excel/CSV)" onFileAccepted={handleNewFile} />
+                <div className="mt-6 w-full">
+                  <div className="font-semibold text-gray-700 mb-2 text-center">Vorschau: Neue URLs</div>
+                  <ul className="bg-pink-50 rounded-xl shadow-inner p-4 border border-pink-100 text-xs max-h-40 overflow-auto">
+                    {newPreview.length === 0 ? <li className="text-gray-400 italic">Keine Datei geladen</li> : newPreview.map((url, i) => <li key={i} className="truncate text-pink-700 font-mono">{url}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            {/* Zeilenlimit-Eingabe */}
+            <div className="mt-10 flex items-center gap-4 w-full max-w-2xl justify-center">
+              <label className="text-base font-medium text-gray-700">Analysiere die ersten</label>
+              <input
+                type="number"
+                min={1}
+                max={1000}
+                value={maxRows}
+                onChange={e => setMaxRows(Number(e.target.value))}
+                className="w-24 px-3 py-2 rounded-xl border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-base shadow-sm transition"
+              />
+              <span className="text-base text-gray-500">Zeilen</span>
+            </div>
+            {/* Fehler & Aktionen */}
+            <div className="mt-10 flex flex-col items-center w-full max-w-2xl gap-2">
+              {error && <div className="text-red-600 text-base mb-2 bg-red-50 rounded-xl px-4 py-2 shadow">{error}</div>}
+              {scrapingError && (
+                <div className="text-red-600 text-base mb-2 bg-red-50 rounded-xl px-4 py-2 shadow flex items-center gap-2">
+                  {scrapingError}
+                  <button
+                    className="ml-4 px-4 py-2 rounded-xl bg-indigo-100 text-indigo-600 text-sm font-semibold hover:bg-indigo-200 border border-indigo-200 transition"
+                    onClick={handleRetryScraping}
+                  >
+                    Erneut versuchen
+                  </button>
+                </div>
+              )}
+              {matchingError && <div className="text-red-600 text-base mb-2 bg-red-50 rounded-xl px-4 py-2 shadow">{matchingError}</div>}
+              <button
+                className="mt-4 px-10 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-xl font-bold shadow-xl hover:scale-105 hover:shadow-2xl transition disabled:opacity-40 disabled:scale-100"
+                disabled={!oldFile || !newFile || loading || scraping || matching}
+                onClick={handleNext}
+              >
+                {loading ? 'Batch wird angelegt…'
+                  : scraping ? 'Daten werden extrahiert…'
+                  : matching ? 'Matching läuft…'
+                  : 'Generate Redirect Mappings'}
+              </button>
+            </div>
           </div>
         </>
       )}
