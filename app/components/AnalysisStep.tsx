@@ -63,6 +63,7 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
   const [newUrls, setNewUrls] = useState<any[]>([]);
   const [loadingUrls, setLoadingUrls] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     if (!batchId) return;
@@ -75,6 +76,7 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
       .then(({ data }) => {
         setNewUrls(data || []);
         setLoadingUrls(false);
+        console.log('Geladene neue URLs:', data);
       });
   }, [batchId]);
 
@@ -148,8 +150,26 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
       {/* Extraktions-Cards */}
       <div className="w-full px-2 md:px-8 mt-8">
         <h3 className="text-lg font-bold mb-4 text-indigo-700">Extrahierte Daten der neuen URLs</h3>
+        <div className="flex items-center gap-4 mb-2">
+          <span className="text-xs text-gray-500">{loadingUrls ? 'Lade...' : `${newUrls.length} neue URLs geladen`}</span>
+          <button
+            className="px-2 py-1 rounded bg-gray-100 text-gray-500 text-xs font-semibold hover:bg-indigo-100 hover:text-indigo-600 border border-gray-200"
+            onClick={() => setShowDebug(v => !v)}
+          >
+            {showDebug ? 'Debug ausblenden' : 'Debug anzeigen'}
+          </button>
+        </div>
+        {showDebug && (
+          <div className="w-full mb-4">
+            <pre className="bg-gray-900 text-green-200 rounded p-4 text-xs overflow-x-auto max-h-64">
+              {JSON.stringify(newUrls, null, 2)}
+            </pre>
+          </div>
+        )}
         {loadingUrls ? (
           <div className="text-indigo-500 animate-pulse">Lade Daten…</div>
+        ) : newUrls.length === 0 ? (
+          <div className="text-red-600 font-semibold py-8 text-center">Keine neuen URLs gefunden! Prüfe, ob der Batch korrekt angelegt und gescraped wurde.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newUrls.map((u, i) => (
