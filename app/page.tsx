@@ -2,7 +2,8 @@
 import Image from "next/image";
 import styles from "./page.module.css";
 import FileUpload from "./components/FileUpload";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "./supabase/client";
 
 const TABS = [
   { key: "upload", label: "Upload & Start" },
@@ -25,6 +26,11 @@ export default function Home() {
   const [matchingDone, setMatchingDone] = useState(false);
   const [matchingError, setMatchingError] = useState<string | null>(null);
   const [lastBatchId, setLastBatchId] = useState<string | null>(null);
+  const [resultTab, setResultTab] = useState("mapping");
+  const [redirects, setRedirects] = useState<any[]>([]);
+  const [oldUrlDetails, setOldUrlDetails] = useState<any[]>([]);
+  const [newUrlDetails, setNewUrlDetails] = useState<any[]>([]);
+  const [loadingResults, setLoadingResults] = useState(false);
 
   const handleStartBatch = async () => {
     setFeedback(null);
@@ -95,6 +101,35 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!lastBatchId || activeTab !== "result") return;
+      setLoadingResults(true);
+      // Redirects + Details holen
+      const { data: redirectsData } = await supabase
+        .from("redirects")
+        .select("id, old_url_id, new_url_id, confidence_score, match_reasoning, match_type, old_url:old_url_id(*), new_url:new_url_id(*)")
+        .eq("batch_id", lastBatchId);
+      setRedirects(redirectsData || []);
+      // Alte URLs
+      const { data: oldUrlsData } = await supabase
+        .from("urls")
+        .select("*")
+        .eq("batch_id", lastBatchId)
+        .eq("type", "old");
+      setOldUrlDetails(oldUrlsData || []);
+      // Neue URLs
+      const { data: newUrlsData } = await supabase
+        .from("urls")
+        .select("*")
+        .eq("batch_id", lastBatchId)
+        .eq("type", "new");
+      setNewUrlDetails(newUrlsData || []);
+      setLoadingResults(false);
+    };
+    fetchResults();
+  }, [lastBatchId, activeTab]);
+
   return (
     <div className={styles.page}>
       <nav className="flex gap-2 mb-8 border-b border-slate-200 dark:border-slate-700">
@@ -164,9 +199,113 @@ export default function Home() {
       {activeTab === "result" && (
         <section className="py-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Ergebnis & Redirect-Mapping</h2>
-          <div className="max-w-3xl mx-auto">
-            {/* Hier folgt die Ergebnis-Tabelle und Download-Button (wird im nächsten Schritt umgesetzt) */}
-            <div className="text-slate-500">Ergebnis-Ansicht folgt ...</div>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex gap-2 mb-6 justify-center">
+              <button onClick={() => setResultTab("mapping")}
+                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "mapping" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Redirect-Mapping</button>
+              <button onClick={() => setResultTab("old")}
+                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "old" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Details alte URLs</button>
+              <button onClick={() => setResultTab("new")}
+                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "new" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Details neue URLs</button>
+              <button onClick={() => setResultTab("download")}
+                className={`px-4 py-2 rounded-t font-medium transition-colors duration-150 ${resultTab === "download" ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>Download</button>
+            </div>
+            {loadingResults && <div className="text-indigo-500">Lade Ergebnisse...</div>}
+            {!loadingResults && resultTab === "mapping" && (
+              <div className="overflow-x-auto rounded-xl shadow bg-white dark:bg-slate-900">
+                <table className="min-w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="px-4 py-2">Alte URL</th>
+                      <th className="px-4 py-2">Neue URL</th>
+                      <th className="px-4 py-2">Typ</th>
+                      <th className="px-4 py-2">Confidence</th>
+                      <th className="px-4 py-2">Reasoning</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {redirects.length === 0 && (
+                      <tr><td colSpan={5} className="text-slate-400 text-center py-8">Noch keine Redirects gefunden.</td></tr>
+                    )}
+                    {redirects.map(r => (
+                      <tr key={r.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                        <td className="px-4 py-2 break-all text-blue-700 dark:text-blue-300">{r.old_url?.url}</td>
+                        <td className="px-4 py-2 break-all text-green-700 dark:text-green-300">{r.new_url?.url}</td>
+                        <td className="px-4 py-2"><span className={`px-2 py-1 rounded text-xs font-semibold ${r.match_type === "ai" ? "bg-indigo-100 text-indigo-700" : r.match_type === "exact" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{r.match_type}</span></td>
+                        <td className="px-4 py-2">{r.confidence_score ? r.confidence_score.toFixed(2) : "-"}</td>
+                        <td className="px-4 py-2 max-w-xs truncate" title={r.match_reasoning}>{r.match_reasoning || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!loadingResults && resultTab === "old" && (
+              <div className="overflow-x-auto rounded-xl shadow bg-white dark:bg-slate-900">
+                <table className="min-w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="px-4 py-2">Alte URL</th>
+                      <th className="px-4 py-2">Title</th>
+                      <th className="px-4 py-2">Meta</th>
+                      <th className="px-4 py-2">H1</th>
+                      <th className="px-4 py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {oldUrlDetails.length === 0 && (
+                      <tr><td colSpan={5} className="text-slate-400 text-center py-8">Keine Daten.</td></tr>
+                    )}
+                    {oldUrlDetails.map(u => (
+                      <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                        <td className="px-4 py-2 break-all">{u.url}</td>
+                        <td className="px-4 py-2">{u.title || "-"}</td>
+                        <td className="px-4 py-2">{u.meta_description || "-"}</td>
+                        <td className="px-4 py-2">{u.h1_heading || "-"}</td>
+                        <td className="px-4 py-2">{u.status_code || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!loadingResults && resultTab === "new" && (
+              <div className="overflow-x-auto rounded-xl shadow bg-white dark:bg-slate-900">
+                <table className="min-w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="px-4 py-2">Neue URL</th>
+                      <th className="px-4 py-2">Title</th>
+                      <th className="px-4 py-2">Meta</th>
+                      <th className="px-4 py-2">H1</th>
+                      <th className="px-4 py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {newUrlDetails.length === 0 && (
+                      <tr><td colSpan={5} className="text-slate-400 text-center py-8">Keine Daten.</td></tr>
+                    )}
+                    {newUrlDetails.map(u => (
+                      <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                        <td className="px-4 py-2 break-all">{u.url}</td>
+                        <td className="px-4 py-2">{u.title || "-"}</td>
+                        <td className="px-4 py-2">{u.meta_description || "-"}</td>
+                        <td className="px-4 py-2">{u.h1_heading || "-"}</td>
+                        <td className="px-4 py-2">{u.status_code || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!loadingResults && resultTab === "download" && (
+              <div className="flex flex-col items-center py-12">
+                <button className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg font-semibold text-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                  Download als CSV (coming soon)
+                </button>
+                <div className="text-slate-400 mt-4">Export-Funktion folgt ...</div>
+              </div>
+            )}
           </div>
         </section>
       )}
