@@ -31,9 +31,7 @@ function useCountUp(target: number, duration = 900) {
   return value;
 }
 
-export function ResultDashboard() {
-  const [batches, setBatches] = useState<Batch[]>([]);
-  const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+export function ResultDashboard({ batchId }: { batchId: string }) {
   const [redirects, setRedirects] = useState<Redirect[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<ExportTabKey>('htaccess');
@@ -44,24 +42,15 @@ export function ResultDashboard() {
   const perPage = 10;
   const [showDebug, setShowDebug] = useState(false);
 
-  // Lade alle Batches beim Mounten
+  // Lade Redirects für den übergebenen Batch
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from('batches').select('id, name').order('created_at', { ascending: false });
-      setBatches(data || []);
-      if (data && data.length > 0 && !selectedBatch) setSelectedBatch(data[0].id);
-    })();
-  }, []);
-
-  // Lade Redirects für den gewählten Batch
-  useEffect(() => {
-    if (!selectedBatch) return;
+    if (!batchId) return;
     setLoading(true);
     (async () => {
       const { data } = await supabase
         .from('redirects')
         .select('id, old_url:old_url_id(url), new_url:new_url_id(url), confidence_score, match_type')
-        .eq('batch_id', selectedBatch);
+        .eq('batch_id', batchId);
       // Fange Array/Objekt-Relationen ab
       const normalized = (data || []).map((r: any) => ({
         ...r,
@@ -71,7 +60,7 @@ export function ResultDashboard() {
       setRedirects(normalized);
       setLoading(false);
     })();
-  }, [selectedBatch]);
+  }, [batchId]);
 
   // Stats
   const total = useCountUp(redirects.length);
@@ -90,7 +79,7 @@ export function ResultDashboard() {
   );
   const totalPages = Math.ceil(filteredMappings.length / perPage);
   const pagedMappings = filteredMappings.slice((page - 1) * perPage, page * perPage);
-  useEffect(() => { setPage(1); }, [typeFilter, search, selectedBatch]);
+  useEffect(() => { setPage(1); }, [typeFilter, search, batchId]);
 
   // Export-Generatoren
   function generateHtaccess(redirects: Redirect[]): string {
@@ -120,20 +109,6 @@ export function ResultDashboard() {
 
   return (
     <div className="flex flex-col gap-16 py-20 w-full min-h-[70vh] bg-gradient-to-br from-indigo-50 via-white to-pink-50 px-0 md:px-0">
-      {/* Batch-Selector */}
-      <div className="flex flex-wrap items-center gap-4 w-full px-2 md:px-8 mb-4">
-        <label className="font-semibold text-slate-700">Batch:</label>
-        <select
-          className="px-3 py-2 rounded border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-sm"
-          value={selectedBatch || ''}
-          onChange={e => setSelectedBatch(e.target.value)}
-        >
-          {batches.map(b => (
-            <option key={b.id} value={b.id}>{b.name} ({b.id.slice(0, 6)})</option>
-          ))}
-        </select>
-        {loading && <span className="text-xs text-indigo-500 animate-pulse">Lade Daten…</span>}
-      </div>
       {/* Stats-Header */}
       <div className="w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
         <StatCard label="Total" value={total} />
@@ -298,9 +273,10 @@ export function ResultDashboard() {
           </div>
         )}
       </div>
-      <div className="w-full flex justify-end px-2 md:px-8 mt-4">
+      {/* Debug Panel */}
+      <div className="w-full flex justify-end px-2 md:px-8 mt-2">
         <button
-          className="px-3 py-1 rounded bg-gray-100 text-gray-500 text-xs font-semibold hover:bg-indigo-100 hover:text-indigo-600 border border-gray-200"
+          className="px-4 py-2 rounded-xl bg-gray-100 text-gray-500 text-sm font-semibold hover:bg-indigo-100 hover:text-indigo-600 border border-gray-200 transition"
           onClick={() => setShowDebug(v => !v)}
         >
           {showDebug ? 'Debug ausblenden' : 'Debug anzeigen'}
@@ -308,7 +284,7 @@ export function ResultDashboard() {
       </div>
       {showDebug && (
         <div className="w-full px-2 md:px-8 mt-2">
-          <pre className="bg-gray-900 text-green-200 rounded p-4 text-xs overflow-x-auto max-h-96">
+          <pre className="bg-gray-900 text-green-200 rounded-xl p-6 text-xs overflow-x-auto max-h-96 shadow-inner">
             {JSON.stringify(redirects, null, 2)}
           </pre>
         </div>

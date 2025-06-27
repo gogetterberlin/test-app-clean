@@ -206,8 +206,8 @@ export default function DashboardPage() {
       {step === 1 && batchId && (
         <AnalysisStep batchId={batchId} onDone={() => setStep(2)} />
       )}
-      {step === 2 && (
-        <ResultDashboard />
+      {step === 2 && batchId && (
+        <ResultDashboard batchId={batchId} />
       )}
     </div>
   );
