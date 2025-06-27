@@ -15,6 +15,7 @@ export default function Home() {
   const [oldUrls, setOldUrls] = useState<string[]>([]);
   const [newUrls, setNewUrls] = useState<string[]>([]);
   const [batchName, setBatchName] = useState("");
+  const [maxRows, setMaxRows] = useState(10);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [scraping, setScraping] = useState(false);
@@ -58,7 +59,7 @@ export default function Home() {
         const scrapeRes = await fetch("/api/scrape", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ batchId: data.batchId }),
+          body: JSON.stringify({ batchId: data.batchId, maxRows }),
         });
         const scrapeData = await scrapeRes.json();
         if (scrapeRes.ok) {
@@ -109,29 +110,40 @@ export default function Home() {
         ))}
       </nav>
       {activeTab === "upload" && (
-        <section className="py-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">SEO Redirect Generator</h2>
-          <div className="mb-6">
-            <input
-              type="text"
-              className="border rounded px-4 py-2 w-80 max-w-full"
-              placeholder="Batch-Name (z.B. Projekt X Redirects)"
-              value={batchName}
-              onChange={e => setBatchName(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <FileUpload label="Alte URLs (Excel)" onFileLoaded={setOldUrls} />
-            <FileUpload label="Neue URLs (Excel)" onFileLoaded={setNewUrls} />
-          </div>
-          <div className="mt-8">
-            <button
-              className="bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
-              disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading}
-              onClick={handleStartBatch}
-            >
-              {loading ? "Speichern..." : "Batch starten"}
-            </button>
+        <section className="py-8 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-8 w-full max-w-2xl border border-slate-200 dark:border-slate-800">
+            <h2 className="text-3xl font-extrabold mb-6 text-indigo-700 dark:text-indigo-400 text-center tracking-tight">SEO Redirect Generator</h2>
+            <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-center">
+              <input
+                type="text"
+                className="border border-slate-300 dark:border-slate-700 rounded px-4 py-2 w-80 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                placeholder="Batch-Name (z.B. Projekt X Redirects)"
+                value={batchName}
+                onChange={e => setBatchName(e.target.value)}
+              />
+              <input
+                type="number"
+                min={1}
+                max={1000}
+                className="border border-slate-300 dark:border-slate-700 rounded px-4 py-2 w-48 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                placeholder="Max. Zeilen (z.B. 10)"
+                value={maxRows}
+                onChange={e => setMaxRows(Number(e.target.value))}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <FileUpload label="Alte URLs (Excel)" onFileLoaded={setOldUrls} />
+              <FileUpload label="Neue URLs (Excel)" onFileLoaded={setNewUrls} />
+            </div>
+            <div className="mt-4 flex justify-center">
+              <button
+                className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg font-semibold text-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading}
+                onClick={handleStartBatch}
+              >
+                {loading ? "Speichern..." : "Batch starten"}
+              </button>
+            </div>
           </div>
         </section>
       )}

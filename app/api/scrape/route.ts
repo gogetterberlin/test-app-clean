@@ -48,7 +48,7 @@ async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: str
 
 export async function POST(req: NextRequest) {
   try {
-    const { batchId } = await req.json();
+    const { batchId, maxRows } = await req.json();
     if (!batchId) return NextResponse.json({ error: 'batchId required' }, { status: 400 });
 
     // Alle neuen URLs für diesen Batch holen
@@ -59,8 +59,10 @@ export async function POST(req: NextRequest) {
       .eq('type', 'new');
     if (error) throw error;
 
-    // Für jede URL: Status, Title, Main Content, Meta Description und H1 holen
-    for (const row of urls) {
+    // Nur die ersten maxRows URLs verarbeiten (wenn gesetzt)
+    const limitedUrls = maxRows ? urls.slice(0, maxRows) : urls;
+
+    for (const row of limitedUrls) {
       const { title, status, main_content, meta_description, h1_heading } = await fetchTitleStatusContentAndMeta(row.url);
       await supabase.from('urls').update({ title, status_code: status, main_content, meta_description, h1_heading }).eq('id', row.id);
     }

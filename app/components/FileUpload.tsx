@@ -26,8 +26,8 @@ export default function FileUpload({ label, onFileLoaded }: FileUploadProps) {
   };
 
   return (
-    <div className="border-dashed border-2 rounded-lg p-4 flex flex-col items-center">
-      <label className="mb-2 font-semibold">{label}</label>
+    <div className="border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-xl p-6 flex flex-col items-center bg-slate-50 dark:bg-slate-800 shadow-md transition-all duration-150">
+      <label className="mb-2 font-semibold text-indigo-700 dark:text-indigo-300">{label}</label>
       <input
         ref={inputRef}
         type="file"
@@ -38,7 +38,7 @@ export default function FileUpload({ label, onFileLoaded }: FileUploadProps) {
         }}
       />
       <button
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-5 py-2 rounded-lg font-medium shadow transition-all duration-150 mt-2"
         onClick={() => inputRef.current?.click()}
       >
         Datei auswählen
