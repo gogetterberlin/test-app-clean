@@ -9,8 +9,9 @@ export default function Home() {
   const [newUrls, setNewUrls] = useState<string[]>([]);
   const [batchName, setBatchName] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleStartBatch = () => {
+  const handleStartBatch = async () => {
     setFeedback(null);
     if (!batchName.trim()) {
       setFeedback("Bitte einen Batch-Namen eingeben.");
@@ -20,8 +21,24 @@ export default function Home() {
       setFeedback("Bitte beide Excel-Dateien hochladen.");
       return;
     }
-    // Hier später: API-Aufruf/Speichern in Supabase
-    setFeedback(`Batch "${batchName}" wurde gestartet!`);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batchName, oldUrls, newUrls }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFeedback(`Batch "${batchName}" wurde gespeichert! (ID: ${data.batchId})`);
+      } else {
+        setFeedback(data.error || "Fehler beim Speichern des Batches.");
+      }
+    } catch (e) {
+      setFeedback("Netzwerk- oder Serverfehler beim Speichern des Batches.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,10 +77,10 @@ export default function Home() {
         <div className="mt-8">
           <button
             className="bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
-            disabled={!oldUrls.length || !newUrls.length || !batchName.trim()}
+            disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading}
             onClick={handleStartBatch}
           >
-            Batch starten
+            {loading ? "Speichern..." : "Batch starten"}
           </button>
         </div>
         {feedback && <div className="mt-4 text-blue-700">{feedback}</div>}
