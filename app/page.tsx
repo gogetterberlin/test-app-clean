@@ -2,8 +2,10 @@
 import Image from "next/image";
 import styles from "./page.module.css";
 import FileUpload from "./components/FileUpload";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase/client";
+import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import { readExcelFile, validateUrls } from "./utils/excel";
 
 const TABS = [
   { key: "upload", label: "Upload & Start" },
@@ -31,6 +33,11 @@ export default function Home() {
   const [oldUrlDetails, setOldUrlDetails] = useState<any[]>([]);
   const [newUrlDetails, setNewUrlDetails] = useState<any[]>([]);
   const [loadingResults, setLoadingResults] = useState(false);
+  // Drag&Drop States
+  const [dragActiveOld, setDragActiveOld] = useState(false);
+  const [dragActiveNew, setDragActiveNew] = useState(false);
+  const oldInputRef = useRef<HTMLInputElement>(null);
+  const newInputRef = useRef<HTMLInputElement>(null);
 
   const handleStartBatch = async () => {
     setFeedback(null);
@@ -130,29 +137,115 @@ export default function Home() {
     fetchResults();
   }, [lastBatchId, activeTab]);
 
+  // Drag&Drop Handler für alte URLs
+  const handleFileOld = async (file: File) => {
+    try {
+      const urls = await readExcelFile(file);
+      const validUrls = validateUrls(urls);
+      setOldUrls(validUrls);
+    } catch (e) {
+      // Fehlerbehandlung optional
+    }
+  };
+
+  // Drag&Drop Handler für neue URLs
+  const handleFileNew = async (file: File) => {
+    try {
+      const urls = await readExcelFile(file);
+      const validUrls = validateUrls(urls);
+      setNewUrls(validUrls);
+    } catch (e) {
+      // Fehlerbehandlung optional
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <nav className="flex gap-2 mb-8 border-b border-slate-200 dark:border-slate-700">
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            className={`px-4 py-2 font-medium rounded-t transition-colors duration-150 ${activeTab === tab.key ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}
-            onClick={() => setActiveTab(tab.key)}
-            disabled={tab.key === "analyse" && !lastBatchId}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white flex flex-col">
+      {/* Hero Header */}
+      <header className="py-12 text-center bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-400 text-white shadow-lg">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <CloudArrowUpIcon className="w-16 h-16 text-white/80 drop-shadow-lg" />
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">SEO Redirect Generator</h1>
+          <p className="text-lg md:text-xl font-medium max-w-2xl mx-auto text-white/90">Upload your old and new URL lists to generate optimal 301 redirects for your SEO relaunch</p>
+        </div>
+      </header>
+      {/* Stepper */}
+      <div className="flex justify-center mt-8 mb-12">
+        <div className="flex items-center gap-8">
+          <div className="flex flex-col items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-4 ${activeTab === "upload" ? "bg-indigo-500 text-white border-indigo-400 shadow-lg" : "bg-white text-indigo-500 border-slate-200"}`}>1</div>
+            <span className="mt-2 text-sm font-medium text-slate-700">Upload</span>
+          </div>
+          <div className="w-12 h-1 bg-gradient-to-r from-indigo-400 to-blue-400 rounded" />
+          <div className="flex flex-col items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-4 ${activeTab === "analyse" ? "bg-indigo-500 text-white border-indigo-400 shadow-lg" : "bg-white text-indigo-500 border-slate-200"}`}>2</div>
+            <span className="mt-2 text-sm font-medium text-slate-700">Analyse</span>
+          </div>
+          <div className="w-12 h-1 bg-gradient-to-r from-indigo-400 to-blue-400 rounded" />
+          <div className="flex flex-col items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-4 ${activeTab === "result" ? "bg-indigo-500 text-white border-indigo-400 shadow-lg" : "bg-white text-indigo-500 border-slate-200"}`}>3</div>
+            <span className="mt-2 text-sm font-medium text-slate-700">Ergebnis</span>
+          </div>
+        </div>
+      </div>
+      {/* Upload Step */}
       {activeTab === "upload" && (
-        <section className="py-8 flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-8 w-full max-w-2xl border border-slate-200 dark:border-slate-800">
-            <h2 className="text-3xl font-extrabold mb-6 text-indigo-700 dark:text-indigo-400 text-center tracking-tight">SEO Redirect Generator</h2>
-            <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-center">
+        <section className="flex-1 flex flex-col items-center justify-center">
+          <div className="bg-white/90 shadow-2xl rounded-3xl p-10 w-full max-w-3xl border border-slate-100 flex flex-col gap-8">
+            <h2 className="text-2xl font-bold text-slate-800 mb-2 text-center">Upload URL-Listen</h2>
+            <div className="flex flex-col md:flex-row gap-8 w-full justify-center">
+              {/* Alte URLs Drag&Drop */}
+              <div
+                className={`flex-1 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer ${dragActiveOld ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-slate-50 hover:bg-indigo-50"}`}
+                onDragOver={e => { e.preventDefault(); setDragActiveOld(true); }}
+                onDragLeave={e => { e.preventDefault(); setDragActiveOld(false); }}
+                onDrop={e => {
+                  e.preventDefault(); setDragActiveOld(false);
+                  if (e.dataTransfer.files?.[0]) handleFileOld(e.dataTransfer.files[0]);
+                }}
+                onClick={() => oldInputRef.current?.click()}
+              >
+                <CloudArrowUpIcon className="w-10 h-10 text-indigo-400 mb-2" />
+                <span className="font-semibold text-slate-700 mb-1">Old URLs (Current Site)</span>
+                <span className="text-xs text-slate-500 mb-2">Drag & drop Excel file or click to select</span>
+                <input
+                  ref={oldInputRef}
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                  onChange={e => { if (e.target.files?.[0]) handleFileOld(e.target.files[0]); }}
+                />
+                <span className="mt-2 text-green-600 font-medium text-sm">{oldUrls.length > 0 ? `${oldUrls.length} URLs loaded` : "No file selected"}</span>
+              </div>
+              {/* Neue URLs Drag&Drop */}
+              <div
+                className={`flex-1 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer ${dragActiveNew ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-slate-50 hover:bg-indigo-50"}`}
+                onDragOver={e => { e.preventDefault(); setDragActiveNew(true); }}
+                onDragLeave={e => { e.preventDefault(); setDragActiveNew(false); }}
+                onDrop={e => {
+                  e.preventDefault(); setDragActiveNew(false);
+                  if (e.dataTransfer.files?.[0]) handleFileNew(e.dataTransfer.files[0]);
+                }}
+                onClick={() => newInputRef.current?.click()}
+              >
+                <CloudArrowUpIcon className="w-10 h-10 text-indigo-400 mb-2" />
+                <span className="font-semibold text-slate-700 mb-1">New URLs (Target Site)</span>
+                <span className="text-xs text-slate-500 mb-2">Drag & drop Excel file or click to select</span>
+                <input
+                  ref={newInputRef}
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                  onChange={e => { if (e.target.files?.[0]) handleFileNew(e.target.files[0]); }}
+                />
+                <span className="mt-2 text-green-600 font-medium text-sm">{newUrls.length > 0 ? `${newUrls.length} URLs loaded` : "No file selected"}</span>
+              </div>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-center mt-4">
               <input
                 type="text"
-                className="border border-slate-300 dark:border-slate-700 rounded px-4 py-2 w-80 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                placeholder="Batch-Name (z.B. Projekt X Redirects)"
+                className="border border-slate-300 rounded px-4 py-2 w-80 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 text-slate-900"
+                placeholder="Batch-Name (e.g. Relaunch 2025)"
                 value={batchName}
                 onChange={e => setBatchName(e.target.value)}
               />
@@ -160,25 +253,19 @@ export default function Home() {
                 type="number"
                 min={1}
                 max={1000}
-                className="border border-slate-300 dark:border-slate-700 rounded px-4 py-2 w-48 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                className="border border-slate-300 rounded px-4 py-2 w-48 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 text-slate-900"
                 placeholder="Max. Zeilen (z.B. 10)"
                 value={maxRows}
                 onChange={e => setMaxRows(Number(e.target.value))}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <FileUpload label="Alte URLs (Excel)" onFileLoaded={setOldUrls} />
-              <FileUpload label="Neue URLs (Excel)" onFileLoaded={setNewUrls} />
-            </div>
-            <div className="mt-4 flex justify-center">
-              <button
-                className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg font-semibold text-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading}
-                onClick={handleStartBatch}
-              >
-                {loading ? "Speichern..." : "Batch starten"}
-              </button>
-            </div>
+            <button
+              className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg font-semibold text-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading}
+              onClick={handleStartBatch}
+            >
+              {loading ? "Speichern..." : "Generate Redirect Mappings"}
+            </button>
           </div>
         </section>
       )}
