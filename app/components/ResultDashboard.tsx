@@ -1,75 +1,18 @@
 import React, { useState, useEffect } from 'react';
-
-const stats = {
-  total: 42,
-  exact: 28,
-  fuzzy: 11,
-  manual: 3,
-  confidence: 92,
-};
-
-const exports = {
-  htaccess: `Redirect 301 /alte-url-1 /neue-url-1\nRedirect 301 /alte-url-2 /neue-url-2`,
-  nginx: `rewrite ^/alte-url-1$ /neue-url-1 permanent;\nrewrite ^/alte-url-2$ /neue-url-2 permanent;`,
-  csv: `old_url,new_url,confidence\n/alte-url-1,/neue-url-1,98\n/alte-url-2,/neue-url-2,95`,
-};
+import { supabase } from '../supabase/client';
 
 type ExportTabKey = 'htaccess' | 'nginx' | 'csv';
+type MappingType = 'All' | 'Exact' | 'Fuzzy' | 'Manual' | string;
 
-type MappingType = 'All' | 'Exact' | 'Fuzzy' | 'Manual';
+type Redirect = {
+  id: string;
+  old_url: { url: string };
+  new_url: { url: string };
+  confidence_score: number;
+  match_type: string;
+};
 
-const mappings = [
-  {
-    old: '/alte-url-1',
-    new: '/neue-url-1',
-    type: 'Exact',
-    confidence: 98,
-    ai: true,
-  },
-  {
-    old: '/alte-url-2',
-    new: '/neue-url-2',
-    type: 'Fuzzy',
-    confidence: 95,
-    ai: true,
-  },
-  {
-    old: '/alte-url-3',
-    new: '/neue-url-3',
-    type: 'Manual',
-    confidence: 80,
-    ai: false,
-  },
-  {
-    old: '/alte-url-4',
-    new: '/neue-url-4',
-    type: 'Exact',
-    confidence: 99,
-    ai: true,
-  },
-  {
-    old: '/alte-url-5',
-    new: '/neue-url-5',
-    type: 'Fuzzy',
-    confidence: 88,
-    ai: true,
-  },
-  {
-    old: '/alte-url-6',
-    new: '/neue-url-6',
-    type: 'Manual',
-    confidence: 75,
-    ai: false,
-  },
-];
-
-const exportTabs = [
-  { key: 'htaccess', label: '.htaccess' },
-  { key: 'nginx', label: 'Nginx' },
-  { key: 'csv', label: 'CSV/Excel' },
-];
-
-const mappingTypes: MappingType[] = ['All', 'Exact', 'Fuzzy', 'Manual'];
+type Batch = { id: string; name: string };
 
 function useCountUp(target: number, duration = 900) {
   const [value, setValue] = useState(0);
@@ -89,21 +32,84 @@ function useCountUp(target: number, duration = 900) {
 }
 
 export function ResultDashboard() {
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+  const [redirects, setRedirects] = useState<Redirect[]>([]);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<ExportTabKey>('htaccess');
   const [copySuccess, setCopySuccess] = useState(false);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<MappingType>('All');
   const [page, setPage] = useState(1);
-  const perPage = 5;
+  const perPage = 10;
 
-  const filteredMappings = mappings.filter(m =>
-    (typeFilter === 'All' || m.type === typeFilter) &&
-    (m.old.includes(search) || m.new.includes(search))
+  // Lade alle Batches beim Mounten
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('batches').select('id, name').order('created_at', { ascending: false });
+      setBatches(data || []);
+      if (data && data.length > 0 && !selectedBatch) setSelectedBatch(data[0].id);
+    })();
+  }, []);
+
+  // Lade Redirects für den gewählten Batch
+  useEffect(() => {
+    if (!selectedBatch) return;
+    setLoading(true);
+    (async () => {
+      const { data } = await supabase
+        .from('redirects')
+        .select('id, old_url:old_url_id(url), new_url:new_url_id(url), confidence_score, match_type')
+        .eq('batch_id', selectedBatch);
+      // Fange Array/Objekt-Relationen ab
+      const normalized = (data || []).map((r: any) => ({
+        ...r,
+        old_url: Array.isArray(r.old_url) ? r.old_url[0] : r.old_url,
+        new_url: Array.isArray(r.new_url) ? r.new_url[0] : r.new_url,
+      }));
+      setRedirects(normalized);
+      setLoading(false);
+    })();
+  }, [selectedBatch]);
+
+  // Stats
+  const total = useCountUp(redirects.length);
+  const exact = useCountUp(redirects.filter(r => r.match_type === 'exact').length);
+  const fuzzy = useCountUp(redirects.filter(r => r.match_type === 'fuzzy').length);
+  const manual = useCountUp(redirects.filter(r => r.match_type === 'manual').length);
+  const confidence = useCountUp(
+    redirects.length ? Math.round(redirects.reduce((acc, r) => acc + (r.confidence_score || 0), 0) / redirects.length * 100) : 0
+  );
+
+  // Filter + Pagination
+  const mappingTypes: MappingType[] = ['All', 'exact', 'fuzzy', 'manual'];
+  const filteredMappings = redirects.filter(m =>
+    (typeFilter === 'All' || m.match_type === typeFilter) &&
+    (m.old_url?.url?.toLowerCase().includes(search.toLowerCase()) || m.new_url?.url?.toLowerCase().includes(search.toLowerCase()))
   );
   const totalPages = Math.ceil(filteredMappings.length / perPage);
   const pagedMappings = filteredMappings.slice((page - 1) * perPage, page * perPage);
+  useEffect(() => { setPage(1); }, [typeFilter, search, selectedBatch]);
 
-  useEffect(() => { setPage(1); }, [typeFilter, search]);
+  // Export-Generatoren
+  function generateHtaccess(redirects: Redirect[]): string {
+    return `# 301 Redirects for SEO Relaunch\n# Generated by SEO Redirect Generator\n\n` +
+      redirects.map((r) => `Redirect 301 ${r.old_url?.url} ${r.new_url?.url}`).join("\n");
+  }
+  function generateNginx(redirects: Redirect[]): string {
+    return `# 301 Redirects for SEO Relaunch\n# Generated by SEO Redirect Generator\n\n` +
+      redirects.map((r) => `rewrite ^${r.old_url?.url}$ ${r.new_url?.url} permanent;`).join("\n");
+  }
+  function generateCSV(redirects: Redirect[]): string {
+    return 'Old URL,New URL,Confidence,Method\n' +
+      redirects.map((r) => `${r.old_url?.url},${r.new_url?.url},${Math.round((r.confidence_score || 0) * 100)}%,${r.match_type}`).join("\n");
+  }
+
+  const exports = {
+    htaccess: generateHtaccess(redirects),
+    nginx: generateNginx(redirects),
+    csv: generateCSV(redirects),
+  };
 
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text);
@@ -111,15 +117,22 @@ export function ResultDashboard() {
     setTimeout(() => setCopySuccess(false), 1200);
   };
 
-  // CountUp-Animationen für Stats
-  const total = useCountUp(stats.total);
-  const exact = useCountUp(stats.exact);
-  const fuzzy = useCountUp(stats.fuzzy);
-  const manual = useCountUp(stats.manual);
-  const confidence = useCountUp(stats.confidence);
-
   return (
     <div className="flex flex-col gap-12 py-12 w-full px-0 md:px-0">
+      {/* Batch-Selector */}
+      <div className="flex flex-wrap items-center gap-4 w-full px-2 md:px-8 mb-4">
+        <label className="font-semibold text-slate-700">Batch:</label>
+        <select
+          className="px-3 py-2 rounded border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-sm"
+          value={selectedBatch || ''}
+          onChange={e => setSelectedBatch(e.target.value)}
+        >
+          {batches.map(b => (
+            <option key={b.id} value={b.id}>{b.name} ({b.id.slice(0, 6)})</option>
+          ))}
+        </select>
+        {loading && <span className="text-xs text-indigo-500 animate-pulse">Lade Daten…</span>}
+      </div>
       {/* Stats-Header */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-6 w-full px-2 md:px-8">
         <StatCard label="Total" value={total} />
@@ -131,17 +144,17 @@ export function ResultDashboard() {
       {/* Export-Tabs */}
       <div className="bg-white rounded-xl shadow p-6 border border-gray-100 w-full px-2 md:px-8">
         <div className="flex gap-4 mb-4 items-end">
-          {exportTabs.map(tab => (
+          {(['htaccess', 'nginx', 'csv'] as ExportTabKey[]).map(tab => (
             <button
-              key={tab.key}
+              key={tab}
               className={`px-4 py-2 rounded-t font-medium transition-all duration-150 border-b-2 ${
-                activeTab === tab.key
+                activeTab === tab
                   ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
                   : 'border-transparent text-gray-400 hover:text-indigo-500'
               }`}
-              onClick={() => setActiveTab(tab.key as ExportTabKey)}
+              onClick={() => setActiveTab(tab)}
             >
-              {tab.label}
+              {tab === 'htaccess' ? '.htaccess' : tab === 'nginx' ? 'Nginx' : 'CSV/Excel'}
             </button>
           ))}
           <div className="ml-auto flex gap-2">
@@ -189,7 +202,7 @@ export function ResultDashboard() {
                 }`}
                 onClick={() => setTypeFilter(type)}
               >
-                {type}
+                {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>
@@ -220,30 +233,30 @@ export function ResultDashboard() {
               ) : (
                 pagedMappings.map((m, i) => (
                   <tr key={i} className="border-b hover:bg-gradient-to-r hover:from-indigo-50 hover:to-pink-50 transition group">
-                    <td className="py-2 px-3 font-mono text-indigo-700">{m.old}</td>
-                    <td className="py-2 px-3 font-mono text-pink-600">{m.new}</td>
+                    <td className="py-2 px-3 font-mono text-indigo-700">{m.old_url?.url}</td>
+                    <td className="py-2 px-3 font-mono text-pink-600">{m.new_url?.url}</td>
                     <td className="py-2 px-3">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium
-                        ${m.type === 'Exact' ? 'bg-emerald-100 text-emerald-700' :
-                          m.type === 'Fuzzy' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-gray-100 text-gray-500'}
-                      `} title={m.type === 'Exact' ? 'Exaktes Match' : m.type === 'Fuzzy' ? 'Fuzzy Match' : 'Manuell zugeordnet'}>
-                        {m.type === 'Exact' ? '✅' : m.type === 'Fuzzy' ? '✨' : '🖐️'} {m.type}
+                        ${m.match_type === 'exact' ? 'bg-emerald-100 text-emerald-700' :
+                          m.match_type === 'fuzzy' ? 'bg-yellow-100 text-yellow-700' :
+                          m.match_type === 'manual' ? 'bg-gray-100 text-gray-500' : 'bg-gray-100 text-gray-500'}
+                      `} title={m.match_type === 'exact' ? 'Exaktes Match' : m.match_type === 'fuzzy' ? 'Fuzzy Match' : m.match_type === 'manual' ? 'Manuell zugeordnet' : ''}>
+                        {m.match_type === 'exact' ? '✅' : m.match_type === 'fuzzy' ? '✨' : m.match_type === 'manual' ? '🖐️' : ''} {m.match_type}
                       </span>
                     </td>
                     <td className="py-2 px-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-gray-200 rounded" title={`AI-Confidence: ${m.confidence}%`}>
+                        <div className="w-16 h-2 bg-gray-200 rounded" title={`AI-Confidence: ${Math.round((m.confidence_score || 0) * 100)}%`}>
                           <div
-                            className={`h-2 rounded ${m.confidence > 90 ? 'bg-emerald-400' : m.confidence > 80 ? 'bg-yellow-400' : 'bg-gray-400'}`}
-                            style={{ width: `${m.confidence}%` }}
+                            className={`h-2 rounded ${m.confidence_score > 0.9 ? 'bg-emerald-400' : m.confidence_score > 0.8 ? 'bg-yellow-400' : 'bg-gray-400'}`}
+                            style={{ width: `${Math.round((m.confidence_score || 0) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500">{m.confidence}%</span>
+                        <span className="text-xs text-gray-500">{m.confidence_score ? `${Math.round((m.confidence_score || 0) * 100)}%` : '-'}</span>
                       </div>
                     </td>
                     <td className="py-2 px-3">
-                      {m.ai ? (
+                      {m.match_type !== 'manual' ? (
                         <span className="inline-flex items-center gap-1 text-indigo-500 text-xs font-semibold" title="AI generiert"><svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8" fill="#6366f1"/><path d="M8 4v4l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>AI</span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-gray-400 text-xs font-semibold" title="Manuell zugeordnet"><svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8" fill="#e5e7eb"/><path d="M8 4v4l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>Manuell</span>
@@ -252,7 +265,7 @@ export function ResultDashboard() {
                     <td className="py-2 px-3">
                       <button
                         className={`px-2 py-1 rounded bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition flex items-center gap-1 ${copySuccess ? 'animate-pulse' : ''} opacity-0 group-hover:opacity-100`}
-                        onClick={() => handleCopy(`${m.old} -> ${m.new}`)}
+                        onClick={() => handleCopy(`${m.old_url?.url} -> ${m.new_url?.url}`)}
                         title="Redirect kopieren"
                       >
                         {copySuccess ? <span>✔️</span> : <span>📋</span>}

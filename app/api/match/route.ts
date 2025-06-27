@@ -56,6 +56,8 @@ export async function POST(req: NextRequest) {
           batch_id: batchId,
           old_url_id: oldUrl.id,
           new_url_id: match.id,
+          confidence_score: 1.0,
+          match_type: 'ai',
         });
       }
     }
