@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabase/client';
 
 const phases = [
   {
@@ -54,11 +55,27 @@ function useAnimatedStats(isActive: boolean) {
   return stats;
 }
 
-export function AnalysisStep({ onDone }: { onDone?: () => void }) {
+export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId: string }) {
   const [phase, setPhase] = useState(0);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const stats = useAnimatedStats(phase > 0);
+  const [newUrls, setNewUrls] = useState<any[]>([]);
+  const [loadingUrls, setLoadingUrls] = useState(false);
+
+  useEffect(() => {
+    if (!batchId) return;
+    setLoadingUrls(true);
+    supabase
+      .from('urls')
+      .select('*')
+      .eq('batch_id', batchId)
+      .eq('type', 'new')
+      .then(({ data }) => {
+        setNewUrls(data || []);
+        setLoadingUrls(false);
+      });
+  }, [batchId]);
 
   useEffect(() => {
     if (phase < phases.length - 1) {
@@ -120,6 +137,38 @@ export function AnalysisStep({ onDone }: { onDone?: () => void }) {
           AI powered by OpenAI
         </div>
         <div className="flex items-center gap-1 text-xs text-emerald-600"><svg width="16" height="16" fill="none"><rect x="2" y="6" width="12" height="8" rx="2" fill="#34d399"/><path d="M4 10l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg> Deine Daten sind sicher</div>
+      </div>
+      {/* Extraktions-Tabelle */}
+      <div className="w-full px-2 md:px-8 mt-8">
+        <h3 className="text-lg font-bold mb-2 text-indigo-700">Extrahierte Daten der neuen URLs</h3>
+        {loadingUrls ? (
+          <div className="text-indigo-500 animate-pulse">Lade Daten…</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs border">
+              <thead>
+                <tr className="bg-indigo-50 text-indigo-700">
+                  <th className="px-2 py-1">URL</th>
+                  <th className="px-2 py-1">Titel</th>
+                  <th className="px-2 py-1">Meta</th>
+                  <th className="px-2 py-1">H1</th>
+                  <th className="px-2 py-1">Content</th>
+                </tr>
+              </thead>
+              <tbody>
+                {newUrls.map((u, i) => (
+                  <tr key={u.id || i} className="border-b">
+                    <td className="px-2 py-1 text-blue-700 break-all">{u.url}</td>
+                    <td className="px-2 py-1">{u.title || <span className="text-gray-400">-</span>}</td>
+                    <td className="px-2 py-1">{u.meta_description || <span className="text-gray-400">-</span>}</td>
+                    <td className="px-2 py-1">{u.h1_heading || <span className="text-gray-400">-</span>}</td>
+                    <td className="px-2 py-1 max-w-xs truncate">{u.main_content ? u.main_content.slice(0, 80) + (u.main_content.length > 80 ? '…' : '') : <span className="text-gray-400">-</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       {/* Abschluss-Glow */}
       {done && (

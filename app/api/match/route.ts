@@ -49,21 +49,31 @@ export async function POST(req: NextRequest) {
     // Für jede alte URL: Matching durchführen
     for (const oldUrl of oldUrls) {
       const prompt = buildPrompt(oldUrl, newUrls);
+      console.log('Prompt:', prompt);
       const bestNewUrl = await callOpenAI(prompt);
+      console.log('AI Antwort:', bestNewUrl);
       const match = newUrls.find(n => bestNewUrl.includes(n.url));
       if (match) {
-        await supabase.from('redirects').insert({
+        const { error: insertError } = await supabase.from('redirects').insert({
           batch_id: batchId,
           old_url_id: oldUrl.id,
           new_url_id: match.id,
           confidence_score: 1.0,
           match_type: 'ai',
         });
+        if (insertError) {
+          console.error('Fehler beim Insert:', insertError);
+        } else {
+          console.log('Redirect gespeichert:', oldUrl.url, '->', match.url);
+        }
+      } else {
+        console.warn('Kein Match gefunden für:', oldUrl.url);
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (e: any) {
+    console.error('Fehler im Matching:', e);
     return NextResponse.json({ error: e.message || 'Unknown error' }, { status: 500 });
   }
 } 
