@@ -13,12 +13,18 @@ export default function Home() {
   const [scraping, setScraping] = useState(false);
   const [scrapingDone, setScrapingDone] = useState(false);
   const [scrapingError, setScrapingError] = useState<string | null>(null);
+  const [matching, setMatching] = useState(false);
+  const [matchingDone, setMatchingDone] = useState(false);
+  const [matchingError, setMatchingError] = useState<string | null>(null);
 
   const handleStartBatch = async () => {
     setFeedback(null);
     setScraping(false);
     setScrapingDone(false);
     setScrapingError(null);
+    setMatching(false);
+    setMatchingDone(false);
+    setMatchingError(null);
     if (!batchName.trim()) {
       setFeedback("Bitte einen Batch-Namen eingeben.");
       return;
@@ -47,6 +53,20 @@ export default function Home() {
         if (scrapeRes.ok) {
           setScrapingDone(true);
           setFeedback(f => f + "\nScraping abgeschlossen!");
+          setMatching(true);
+          const matchRes = await fetch("/api/match", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ batchId: data.batchId }),
+          });
+          const matchData = await matchRes.json();
+          if (matchRes.ok) {
+            setMatchingDone(true);
+            setFeedback(f => f + "\nMatching abgeschlossen!");
+          } else {
+            setMatchingError(matchData.error || "Fehler beim Matching.");
+          }
+          setMatching(false);
         } else {
           setScrapingError(scrapeData.error || "Fehler beim Scraping.");
         }
@@ -97,15 +117,17 @@ export default function Home() {
         <div className="mt-8">
           <button
             className="bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
-            disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading || scraping}
+            disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading || scraping || matching}
             onClick={handleStartBatch}
           >
-            {loading ? "Speichern..." : scraping ? "Scraping läuft..." : "Batch starten"}
+            {loading ? "Speichern..." : scraping ? "Scraping läuft..." : matching ? "Matching läuft..." : "Batch starten"}
           </button>
         </div>
         {feedback && <div className="mt-4 text-blue-700 whitespace-pre-line">{feedback}</div>}
         {scrapingError && <div className="mt-2 text-red-600">{scrapingError}</div>}
         {scrapingDone && <div className="mt-2 text-green-700">Scraping abgeschlossen!</div>}
+        {matchingError && <div className="mt-2 text-red-600">{matchingError}</div>}
+        {matchingDone && <div className="mt-2 text-green-700">Matching abgeschlossen!</div>}
       </section>
       <footer className={styles.footer}>
         <a
