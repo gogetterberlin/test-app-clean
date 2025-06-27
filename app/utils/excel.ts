@@ -9,7 +9,7 @@ export async function readExcelFile(file: File): Promise<string[]> {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const urls = XLSX.utils.sheet_to_json(sheet, { header: 1 })
         .flat()
-        .filter((url: string) => typeof url === 'string' && url.startsWith('http'));
+        .filter((url): url is string => typeof url === 'string' && url.startsWith('http'));
       resolve(urls);
     };
     reader.onerror = reject;
