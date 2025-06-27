@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import styles from "./page.module.css";
-import FileUpload from "./components/FileUpload";
+import { FileUpload } from "./components/FileUpload";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase/client";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
