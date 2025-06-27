@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { Stepper } from '../components/Stepper';
 import { FileUpload } from '../components/FileUpload';
