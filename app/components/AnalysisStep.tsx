@@ -91,10 +91,9 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
       setProgress(100);
       setTimeout(() => {
         setDone(true);
-        onDone?.();
       }, phases[phase].duration);
     }
-  }, [phase, onDone]);
+  }, [phase]);
 
   const handleCopy = async (url: string) => {
     await navigator.clipboard.writeText(url);
@@ -203,6 +202,16 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
           <div className="text-sm text-gray-500">Die Ergebnisse sind bereit. Du kannst jetzt fortfahren.</div>
         </div>
       )}
+      {/* Weiter Button */}
+      <div className="w-full flex justify-end px-2 md:px-8 mt-8">
+        <button
+          className="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold shadow disabled:opacity-40 transition text-lg"
+          disabled={!done}
+          onClick={() => done && onDone?.()}
+        >
+          Weiter
+        </button>
+      </div>
       <style jsx>{`
         .animate-glow {
           animation: glow 1.5s ease-in-out infinite alternate;
