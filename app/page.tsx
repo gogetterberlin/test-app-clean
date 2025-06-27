@@ -7,6 +7,22 @@ import { useState } from "react";
 export default function Home() {
   const [oldUrls, setOldUrls] = useState<string[]>([]);
   const [newUrls, setNewUrls] = useState<string[]>([]);
+  const [batchName, setBatchName] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const handleStartBatch = () => {
+    setFeedback(null);
+    if (!batchName.trim()) {
+      setFeedback("Bitte einen Batch-Namen eingeben.");
+      return;
+    }
+    if (!oldUrls.length || !newUrls.length) {
+      setFeedback("Bitte beide Excel-Dateien hochladen.");
+      return;
+    }
+    // Hier später: API-Aufruf/Speichern in Supabase
+    setFeedback(`Batch "${batchName}" wurde gestartet!`);
+  };
 
   return (
     <div className={styles.page}>
@@ -28,6 +44,15 @@ export default function Home() {
       </main>
       <section className="py-12 text-center">
         <h2 className="text-2xl font-bold mb-4">SEO Redirect Generator</h2>
+        <div className="mb-6">
+          <input
+            type="text"
+            className="border rounded px-4 py-2 w-80 max-w-full"
+            placeholder="Batch-Name (z.B. Projekt X Redirects)"
+            value={batchName}
+            onChange={e => setBatchName(e.target.value)}
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           <FileUpload label="Alte URLs (Excel)" onFileLoaded={setOldUrls} />
           <FileUpload label="Neue URLs (Excel)" onFileLoaded={setNewUrls} />
@@ -35,11 +60,13 @@ export default function Home() {
         <div className="mt-8">
           <button
             className="bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
-            disabled={!oldUrls.length || !newUrls.length}
+            disabled={!oldUrls.length || !newUrls.length || !batchName.trim()}
+            onClick={handleStartBatch}
           >
-            Upload & Weiter
+            Batch starten
           </button>
         </div>
+        {feedback && <div className="mt-4 text-blue-700">{feedback}</div>}
       </section>
       <footer className={styles.footer}>
         <a
