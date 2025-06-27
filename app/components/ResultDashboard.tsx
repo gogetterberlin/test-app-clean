@@ -42,6 +42,7 @@ export function ResultDashboard() {
   const [typeFilter, setTypeFilter] = useState<MappingType>('All');
   const [page, setPage] = useState(1);
   const perPage = 10;
+  const [showDebug, setShowDebug] = useState(false);
 
   // Lade alle Batches beim Mounten
   useEffect(() => {
@@ -297,6 +298,21 @@ export function ResultDashboard() {
           </div>
         )}
       </div>
+      <div className="w-full flex justify-end px-2 md:px-8 mt-4">
+        <button
+          className="px-3 py-1 rounded bg-gray-100 text-gray-500 text-xs font-semibold hover:bg-indigo-100 hover:text-indigo-600 border border-gray-200"
+          onClick={() => setShowDebug(v => !v)}
+        >
+          {showDebug ? 'Debug ausblenden' : 'Debug anzeigen'}
+        </button>
+      </div>
+      {showDebug && (
+        <div className="w-full px-2 md:px-8 mt-2">
+          <pre className="bg-gray-900 text-green-200 rounded p-4 text-xs overflow-x-auto max-h-96">
+            {JSON.stringify(redirects, null, 2)}
+          </pre>
+        </div>
+      )}
       {/* Footer Branding */}
       <footer className="mt-8 text-center text-xs text-gray-400 flex flex-col items-center gap-1 w-full px-2 md:px-8">
         <span>Powered by <span className="font-semibold text-indigo-500">OpenAI</span> & modern SaaS-UX</span>

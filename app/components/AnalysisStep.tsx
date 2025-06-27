@@ -62,6 +62,7 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
   const stats = useAnimatedStats(phase > 0);
   const [newUrls, setNewUrls] = useState<any[]>([]);
   const [loadingUrls, setLoadingUrls] = useState(false);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!batchId) return;
@@ -92,6 +93,12 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
       }, phases[phase].duration);
     }
   }, [phase, onDone]);
+
+  const handleCopy = async (url: string) => {
+    await navigator.clipboard.writeText(url);
+    setCopySuccess(url);
+    setTimeout(() => setCopySuccess(null), 1200);
+  };
 
   return (
     <div className="flex flex-col items-center gap-10 py-16 w-full px-0 md:px-0">
@@ -138,35 +145,34 @@ export function AnalysisStep({ onDone, batchId }: { onDone?: () => void; batchId
         </div>
         <div className="flex items-center gap-1 text-xs text-emerald-600"><svg width="16" height="16" fill="none"><rect x="2" y="6" width="12" height="8" rx="2" fill="#34d399"/><path d="M4 10l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg> Deine Daten sind sicher</div>
       </div>
-      {/* Extraktions-Tabelle */}
+      {/* Extraktions-Cards */}
       <div className="w-full px-2 md:px-8 mt-8">
-        <h3 className="text-lg font-bold mb-2 text-indigo-700">Extrahierte Daten der neuen URLs</h3>
+        <h3 className="text-lg font-bold mb-4 text-indigo-700">Extrahierte Daten der neuen URLs</h3>
         {loadingUrls ? (
           <div className="text-indigo-500 animate-pulse">Lade Daten…</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs border">
-              <thead>
-                <tr className="bg-indigo-50 text-indigo-700">
-                  <th className="px-2 py-1">URL</th>
-                  <th className="px-2 py-1">Titel</th>
-                  <th className="px-2 py-1">Meta</th>
-                  <th className="px-2 py-1">H1</th>
-                  <th className="px-2 py-1">Content</th>
-                </tr>
-              </thead>
-              <tbody>
-                {newUrls.map((u, i) => (
-                  <tr key={u.id || i} className="border-b">
-                    <td className="px-2 py-1 text-blue-700 break-all">{u.url}</td>
-                    <td className="px-2 py-1">{u.title || <span className="text-gray-400">-</span>}</td>
-                    <td className="px-2 py-1">{u.meta_description || <span className="text-gray-400">-</span>}</td>
-                    <td className="px-2 py-1">{u.h1_heading || <span className="text-gray-400">-</span>}</td>
-                    <td className="px-2 py-1 max-w-xs truncate">{u.main_content ? u.main_content.slice(0, 80) + (u.main_content.length > 80 ? '…' : '') : <span className="text-gray-400">-</span>}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {newUrls.map((u, i) => (
+              <div key={u.id || i} className="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-2 border border-gray-100 relative group">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-mono text-xs text-blue-700 break-all truncate max-w-[220px]" title={u.url}>{u.url}</span>
+                  <button
+                    className="ml-auto px-2 py-1 rounded bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition"
+                    onClick={() => handleCopy(u.url)}
+                    title="URL kopieren"
+                  >
+                    {copySuccess === u.url ? '✔️' : '📋'}
+                  </button>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Field label="Titel" value={u.title} />
+                  <Field label="Meta" value={u.meta_description} />
+                  <Field label="H1" value={u.h1_heading} />
+                  <Field label="Status" value={u.status_code} />
+                  <Field label="Content" value={u.main_content} long />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -195,6 +201,19 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
     <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center border border-gray-100">
       <div className="text-2xl font-bold text-indigo-600 mb-1">{value}</div>
       <div className="text-xs text-gray-500 font-medium tracking-wide">{label}</div>
+    </div>
+  );
+}
+
+function Field({ label, value, long }: { label: string; value: any; long?: boolean }) {
+  return (
+    <div className="flex gap-2 items-start">
+      <span className="text-xs font-semibold text-gray-500 w-16 shrink-0">{label}:</span>
+      {value ? (
+        <span className={`text-xs text-gray-800 ${long ? 'line-clamp-3 max-w-xs' : 'truncate max-w-[180px]'}`}>{long && typeof value === 'string' ? value.slice(0, 120) + (value.length > 120 ? '…' : '') : value}</span>
+      ) : (
+        <span className="text-xs text-gray-400 italic" title="Nicht extrahiert">-</span>
+      )}
     </div>
   );
 } 
