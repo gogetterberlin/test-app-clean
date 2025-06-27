@@ -4,7 +4,14 @@ import styles from "./page.module.css";
 import FileUpload from "./components/FileUpload";
 import { useState } from "react";
 
+const TABS = [
+  { key: "upload", label: "Upload & Start" },
+  { key: "analyse", label: "Analyse" },
+  { key: "result", label: "Ergebnis" },
+];
+
 export default function Home() {
+  const [activeTab, setActiveTab] = useState("upload");
   const [oldUrls, setOldUrls] = useState<string[]>([]);
   const [newUrls, setNewUrls] = useState<string[]>([]);
   const [batchName, setBatchName] = useState("");
@@ -16,6 +23,7 @@ export default function Home() {
   const [matching, setMatching] = useState(false);
   const [matchingDone, setMatchingDone] = useState(false);
   const [matchingError, setMatchingError] = useState<string | null>(null);
+  const [lastBatchId, setLastBatchId] = useState<string | null>(null);
 
   const handleStartBatch = async () => {
     setFeedback(null);
@@ -35,6 +43,7 @@ export default function Home() {
     }
     setLoading(true);
     try {
+      setActiveTab("analyse");
       const res = await fetch("/api/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,6 +52,8 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         setFeedback(`Batch "${batchName}" wurde gespeichert! (ID: ${data.batchId})`);
+        setLastBatchId(data.batchId);
+        // Scraping automatisch starten
         setScraping(true);
         const scrapeRes = await fetch("/api/scrape", {
           method: "POST",
@@ -53,6 +64,7 @@ export default function Home() {
         if (scrapeRes.ok) {
           setScrapingDone(true);
           setFeedback(f => f + "\nScraping abgeschlossen!");
+          // Matching automatisch starten
           setMatching(true);
           const matchRes = await fetch("/api/match", {
             method: "POST",
@@ -63,6 +75,7 @@ export default function Home() {
           if (matchRes.ok) {
             setMatchingDone(true);
             setFeedback(f => f + "\nMatching abgeschlossen!");
+            setActiveTab("result");
           } else {
             setMatchingError(matchData.error || "Fehler beim Matching.");
           }
@@ -83,96 +96,68 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-      </main>
-      <section className="py-12 text-center">
-        <h2 className="text-2xl font-bold mb-4">SEO Redirect Generator</h2>
-        <div className="mb-6">
-          <input
-            type="text"
-            className="border rounded px-4 py-2 w-80 max-w-full"
-            placeholder="Batch-Name (z.B. Projekt X Redirects)"
-            value={batchName}
-            onChange={e => setBatchName(e.target.value)}
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-          <FileUpload label="Alte URLs (Excel)" onFileLoaded={setOldUrls} />
-          <FileUpload label="Neue URLs (Excel)" onFileLoaded={setNewUrls} />
-        </div>
-        <div className="mt-8">
+      <nav className="flex gap-2 mb-8 border-b border-slate-200 dark:border-slate-700">
+        {TABS.map(tab => (
           <button
-            className="bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
-            disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading || scraping || matching}
-            onClick={handleStartBatch}
+            key={tab.key}
+            className={`px-4 py-2 font-medium rounded-t transition-colors duration-150 ${activeTab === tab.key ? "bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}
+            onClick={() => setActiveTab(tab.key)}
+            disabled={tab.key === "analyse" && !lastBatchId}
           >
-            {loading ? "Speichern..." : scraping ? "Scraping läuft..." : matching ? "Matching läuft..." : "Batch starten"}
+            {tab.label}
           </button>
-        </div>
-        {feedback && <div className="mt-4 text-blue-700 whitespace-pre-line">{feedback}</div>}
-        {scrapingError && <div className="mt-2 text-red-600">{scrapingError}</div>}
-        {scrapingDone && <div className="mt-2 text-green-700">Scraping abgeschlossen!</div>}
-        {matchingError && <div className="mt-2 text-red-600">{matchingError}</div>}
-        {matchingDone && <div className="mt-2 text-green-700">Matching abgeschlossen!</div>}
-      </section>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        ))}
+      </nav>
+      {activeTab === "upload" && (
+        <section className="py-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">SEO Redirect Generator</h2>
+          <div className="mb-6">
+            <input
+              type="text"
+              className="border rounded px-4 py-2 w-80 max-w-full"
+              placeholder="Batch-Name (z.B. Projekt X Redirects)"
+              value={batchName}
+              onChange={e => setBatchName(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            <FileUpload label="Alte URLs (Excel)" onFileLoaded={setOldUrls} />
+            <FileUpload label="Neue URLs (Excel)" onFileLoaded={setNewUrls} />
+          </div>
+          <div className="mt-8">
+            <button
+              className="bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
+              disabled={!oldUrls.length || !newUrls.length || !batchName.trim() || loading}
+              onClick={handleStartBatch}
+            >
+              {loading ? "Speichern..." : "Batch starten"}
+            </button>
+          </div>
+        </section>
+      )}
+      {activeTab === "analyse" && (
+        <section className="py-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Analyse & Fortschritt</h2>
+          <div className="max-w-xl mx-auto">
+            {feedback && <div className="mb-4 text-blue-700 whitespace-pre-line text-left">{feedback}</div>}
+            {scrapingError && <div className="mb-2 text-red-600">{scrapingError}</div>}
+            {scraping && <div className="mb-2 text-indigo-600">Scraping läuft...</div>}
+            {scrapingDone && <div className="mb-2 text-green-700">Scraping abgeschlossen!</div>}
+            {matchingError && <div className="mb-2 text-red-600">{matchingError}</div>}
+            {matching && <div className="mb-2 text-indigo-600">Matching läuft...</div>}
+            {matchingDone && <div className="mb-2 text-green-700">Matching abgeschlossen!</div>}
+          </div>
+        </section>
+      )}
+      {activeTab === "result" && (
+        <section className="py-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Ergebnis & Redirect-Mapping</h2>
+          <div className="max-w-3xl mx-auto">
+            {/* Hier folgt die Ergebnis-Tabelle und Download-Button (wird im nächsten Schritt umgesetzt) */}
+            <div className="text-slate-500">Ergebnis-Ansicht folgt ...</div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
