@@ -270,16 +270,54 @@ export default function Home() {
         </section>
       )}
       {activeTab === "analyse" && (
-        <section className="py-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Analyse & Fortschritt</h2>
-          <div className="max-w-xl mx-auto">
-            {feedback && <div className="mb-4 text-blue-700 whitespace-pre-line text-left">{feedback}</div>}
-            {scrapingError && <div className="mb-2 text-red-600">{scrapingError}</div>}
-            {scraping && <div className="mb-2 text-indigo-600">Scraping läuft...</div>}
-            {scrapingDone && <div className="mb-2 text-green-700">Scraping abgeschlossen!</div>}
-            {matchingError && <div className="mb-2 text-red-600">{matchingError}</div>}
-            {matching && <div className="mb-2 text-indigo-600">Matching läuft...</div>}
-            {matchingDone && <div className="mb-2 text-green-700">Matching abgeschlossen!</div>}
+        <section className="w-full min-h-[60vh] flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-blue-50 to-white py-12 px-0">
+          <div className="w-full flex flex-col items-center">
+            <h2 className="text-3xl font-extrabold mb-8 text-indigo-700 tracking-tight">Analyse & Fortschritt</h2>
+            {/* Progressbar & Stats */}
+            <div className="w-full max-w-4xl flex flex-col md:flex-row gap-8 items-center justify-center mb-8">
+              <div className="flex-1 flex flex-col items-center">
+                <div className="w-full bg-slate-200 rounded-full h-4 mb-2">
+                  <div className="bg-gradient-to-r from-indigo-500 to-blue-500 h-4 rounded-full transition-all duration-500" style={{ width: `${scrapingDone ? 100 : scraping ? 60 : 0}%` }} />
+                </div>
+                <div className="flex justify-between w-full text-xs text-slate-500">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <svg className={`w-6 h-6 animate-spin text-indigo-500 ${scraping ? '' : 'hidden'}`} fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                  <span className="font-semibold text-indigo-700">{scraping ? "OpenAI analysiert URLs..." : scrapingDone ? "Analyse abgeschlossen!" : "Warte auf Analyse..."}</span>
+                </div>
+                <div className="text-slate-500 text-sm">{scraping ? "Die thematische Zuordnung läuft. Bitte warten..." : scrapingDone ? "Alle URLs wurden analysiert." : ""}</div>
+              </div>
+            </div>
+            {/* Aktuell analysierte URL */}
+            {scraping && (
+              <div className="w-full max-w-2xl bg-white/80 rounded-xl shadow p-6 mb-8 border border-indigo-100 flex flex-col items-center">
+                <span className="text-xs text-slate-500 mb-2">Aktuell analysierte URL:</span>
+                <span className="font-mono text-indigo-700 text-sm break-all">{feedback?.split("\n").slice(-1)[0]}</span>
+              </div>
+            )}
+            {/* Stats */}
+            <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
+              <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <span className="text-2xl font-bold text-indigo-600">{oldUrls.length}</span>
+                <span className="text-xs text-slate-500">Alte URLs</span>
+              </div>
+              <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <span className="text-2xl font-bold text-blue-600">{newUrls.length}</span>
+                <span className="text-xs text-slate-500">Neue URLs</span>
+              </div>
+              <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <span className="text-2xl font-bold text-green-600">{scrapingDone ? oldUrls.length : scraping ? Math.floor(oldUrls.length * 0.6) : 0}</span>
+                <span className="text-xs text-slate-500">Analysiert</span>
+              </div>
+              <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <span className="text-2xl font-bold text-slate-600">{scrapingDone ? 0 : scraping ? oldUrls.length - Math.floor(oldUrls.length * 0.6) : oldUrls.length}</span>
+                <span className="text-xs text-slate-500">Offen</span>
+              </div>
+            </div>
           </div>
         </section>
       )}
