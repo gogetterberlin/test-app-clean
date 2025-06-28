@@ -297,7 +297,7 @@ export default function TestPipeline() {
             <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
               <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#818cf8', letterSpacing: -0.5 }}>Analysierte alte URLs</h3>
               <div style={{ background: '#232329', borderRadius: 8, padding: 18, minHeight: 120, border: '1px solid #27272a', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {analysisOld.length === 0 ? <div style={{ color: '#f87171', fontWeight: 600 }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                {analysisOld.length === 0 ? <div style={{ color: '#f87171', fontWeight: 600 }}>Keine alten URLs analysiert.</div> : analysisOld.filter(Boolean).map((u, i) => (
                   <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: '10px 0', marginBottom: 2, background: u.error ? '#3f3f46' : 'transparent' }}>
                     <div style={{ fontWeight: 700, color: '#818cf8', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
@@ -315,7 +315,7 @@ export default function TestPipeline() {
             <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
               <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#f472b6', letterSpacing: -0.5 }}>Analysierte neue URLs</h3>
               <div style={{ background: '#232329', borderRadius: 8, padding: 18, minHeight: 120, border: '1px solid #27272a', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {analysisNew.length === 0 ? <div style={{ color: '#f87171', fontWeight: 600 }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                {analysisNew.length === 0 ? <div style={{ color: '#f87171', fontWeight: 600 }}>Keine neuen URLs analysiert.</div> : analysisNew.filter(Boolean).map((u, i) => (
                   <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: '10px 0', marginBottom: 2, background: u.error ? '#3f3f46' : 'transparent' }}>
                     <div style={{ fontWeight: 700, color: '#f472b6', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
