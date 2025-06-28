@@ -247,7 +247,7 @@ export default function TestPipeline() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 0, width: '100vw' }}>
         <div style={{ flex: 1, minWidth: 0, padding: 0 }}>
           <label style={{ fontWeight: 600, marginLeft: 24, color: '#a1a1aa' }}>Alte URLs (eine pro Zeile):</label>
-          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px', color: '#fafafa' }} onChange={e => handleExcelUpload(e, 'old')} />
+          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px', color: '#fafafa', background: 'transparent' }} onChange={e => handleExcelUpload(e, 'old')} />
           {oldUploadStatus && <span style={{ color: oldUploadStatus.includes('Fehler') ? '#f87171' : '#34d399', marginLeft: 12 }}>{oldUploadStatus}</span>}
           <textarea rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 18, border: 'none', borderBottom: '1.5px solid #27272a', borderRadius: 0, padding: 16, marginBottom: 8, background: '#232329', color: '#fafafa', boxSizing: 'border-box', resize: 'vertical', minHeight: 180, maxHeight: 400, overflowY: 'auto' }} value={oldUrls} onChange={e => setOldUrls(e.target.value)} />
           <div style={{ color: '#818cf8', fontWeight: 500, marginBottom: 8, marginLeft: 24 }}>{oldUrlList.length} URLs importiert</div>
@@ -257,7 +257,7 @@ export default function TestPipeline() {
         </div>
         <div style={{ flex: 1, minWidth: 0, padding: 0 }}>
           <label style={{ fontWeight: 600, marginLeft: 24, color: '#a1a1aa' }}>Neue URLs (eine pro Zeile):</label>
-          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px', color: '#fafafa' }} onChange={e => handleExcelUpload(e, 'new')} />
+          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px', color: '#fafafa', background: 'transparent' }} onChange={e => handleExcelUpload(e, 'new')} />
           {newUploadStatus && <span style={{ color: newUploadStatus.includes('Fehler') ? '#f87171' : '#34d399', marginLeft: 12 }}>{newUploadStatus}</span>}
           <textarea rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 18, border: 'none', borderBottom: '1.5px solid #27272a', borderRadius: 0, padding: 16, marginBottom: 8, background: '#232329', color: '#fafafa', boxSizing: 'border-box', resize: 'vertical', minHeight: 180, maxHeight: 400, overflowY: 'auto' }} value={newUrls} onChange={e => setNewUrls(e.target.value)} />
           <div style={{ color: '#f472b6', fontWeight: 500, marginBottom: 8, marginLeft: 24 }}>{newUrlList.length} URLs importiert</div>
@@ -272,7 +272,7 @@ export default function TestPipeline() {
         <span style={{ color: '#a1a1aa', fontSize: 18 }}>Seiten</span>
       </div>
       <div style={{ width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
-        <button onClick={runPipeline} disabled={loading || scraping} style={{ padding: '18px 60px', fontSize: 22, borderRadius: 8, background: 'linear-gradient(90deg,#18181b,#232329)', color: '#fafafa', border: '1px solid #27272a', fontWeight: 700, letterSpacing: 1, cursor: loading || scraping ? 'not-allowed' : 'pointer', opacity: loading || scraping ? 0.5 : 1 }}>
+        <button onClick={runPipeline} disabled={loading || scraping} style={{ padding: '18px 60px', fontSize: 22, borderRadius: 8, background: 'transparent', color: '#fafafa', border: '1px solid #27272a', fontWeight: 700, letterSpacing: 1, cursor: loading || scraping ? 'not-allowed' : 'pointer', opacity: loading || scraping ? 0.5 : 1 }}>
           {loading || scraping ? 'Bitte warten...' : 'Pipeline testen'}
         </button>
       </div>
@@ -282,31 +282,31 @@ export default function TestPipeline() {
       {showAnalysis && (
         <div style={{ marginBottom: 32, width: '100vw', display: 'flex', gap: 32, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 320 }}>
-            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#6366f1' }}>Analysierte alte URLs (max. {maxRows})</h3>
-            <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box' }}>
-              {analysisOld.length === 0 ? <div style={{ color: '#ef4444' }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
-                <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
-                  <div><b>URL:</b> {u.url}</div>
-                  <div><b>Status:</b> {u.status_code}</div>
-                  <div><b>Titel:</b> {u.title}</div>
-                  <div><b>Meta:</b> {u.meta_description}</div>
-                  <div><b>H1:</b> {u.h1_heading}</div>
-                  <div><b>Main:</b> <span style={{ color: '#64748b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#818cf8' }}>Analysierte alte URLs (max. {maxRows})</h3>
+            <div style={{ background: '#232329', borderRadius: 8, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', border: '1px solid #27272a' }}>
+              {analysisOld.length === 0 ? <div style={{ color: '#f87171' }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: 10 }}>
+                  <div><b style={{ color: '#818cf8' }}>URL:</b> {u.url}</div>
+                  <div><b>Status:</b> <span style={{ color: '#a1a1aa' }}>{u.status_code}</span></div>
+                  <div><b>Titel:</b> <span style={{ color: '#a1a1aa' }}>{u.title}</span></div>
+                  <div><b>Meta:</b> <span style={{ color: '#a1a1aa' }}>{u.meta_description}</span></div>
+                  <div><b>H1:</b> <span style={{ color: '#a1a1aa' }}>{u.h1_heading}</span></div>
+                  <div><b>Main:</b> <span style={{ color: '#52525b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
                 </div>
               ))}
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 320 }}>
-            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#ec4899' }}>Analysierte neue URLs (max. {maxRows})</h3>
-            <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box' }}>
-              {analysisNew.length === 0 ? <div style={{ color: '#ef4444' }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
-                <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
-                  <div><b>URL:</b> {u.url}</div>
-                  <div><b>Status:</b> {u.status_code}</div>
-                  <div><b>Titel:</b> {u.title}</div>
-                  <div><b>Meta:</b> {u.meta_description}</div>
-                  <div><b>H1:</b> {u.h1_heading}</div>
-                  <div><b>Main:</b> <span style={{ color: '#64748b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#f472b6' }}>Analysierte neue URLs (max. {maxRows})</h3>
+            <div style={{ background: '#232329', borderRadius: 8, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', border: '1px solid #27272a' }}>
+              {analysisNew.length === 0 ? <div style={{ color: '#f87171' }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: 10 }}>
+                  <div><b style={{ color: '#f472b6' }}>URL:</b> {u.url}</div>
+                  <div><b>Status:</b> <span style={{ color: '#a1a1aa' }}>{u.status_code}</span></div>
+                  <div><b>Titel:</b> <span style={{ color: '#a1a1aa' }}>{u.title}</span></div>
+                  <div><b>Meta:</b> <span style={{ color: '#a1a1aa' }}>{u.meta_description}</span></div>
+                  <div><b>H1:</b> <span style={{ color: '#a1a1aa' }}>{u.h1_heading}</span></div>
+                  <div><b>Main:</b> <span style={{ color: '#52525b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
                 </div>
               ))}
             </div>
@@ -314,52 +314,52 @@ export default function TestPipeline() {
         </div>
       )}
       <div style={{ width: '100vw' }}>
-        <b style={{ marginLeft: 24 }}>Gefundene Redirects:</b>
-        <pre style={{ background: '#111827', color: '#a7f3d0', borderRadius: 0, padding: 16, fontSize: 16, minHeight: 40, maxHeight: 220, overflowY: 'auto', width: '100vw', boxSizing: 'border-box' }}>{JSON.stringify(redirects, null, 2)}</pre>
+        <b style={{ marginLeft: 24, color: '#a1a1aa' }}>Gefundene Redirects:</b>
+        <pre style={{ background: '#18181b', color: '#a7f3d0', borderRadius: 8, padding: 16, fontSize: 16, minHeight: 40, maxHeight: 220, overflowY: 'auto', width: '100vw', boxSizing: 'border-box', border: '1px solid #27272a' }}>{JSON.stringify(redirects, null, 2)}</pre>
       </div>
       {(scraping || scrapeProgress.old > 0 || scrapeProgress.new > 0) && (
         <div style={{ width: '100vw', marginBottom: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ width: 480, maxWidth: '90vw', background: '#f3f4f6', borderRadius: 16, overflow: 'hidden', marginBottom: 16, border: '2.5px solid #6366f1', boxShadow: '0 2px 16px #6366f122' }}>
-            <div style={{ height: 28, background: 'linear-gradient(90deg,#6366f1,#ec4899)', width: `${Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%`, transition: 'width 0.5s cubic-bezier(.4,2,.6,1)', borderRadius: 16, boxShadow: '0 2px 8px #6366f133', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
+          <div style={{ width: 480, maxWidth: '90vw', background: '#232329', borderRadius: 8, overflow: 'hidden', marginBottom: 16, border: '1.5px solid #27272a' }}>
+            <div style={{ height: 28, background: 'linear-gradient(90deg,#818cf8,#f472b6)', width: `${Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%`, transition: 'width 0.5s cubic-bezier(.4,2,.6,1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fafafa', fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
               {Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%
             </div>
           </div>
-          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, color: '#6366f1', marginBottom: 8, fontWeight: 700, letterSpacing: 0.5 }}>
-            Scraping: <span style={{ color: '#111' }}>{scrapeProgress.old + scrapeProgress.new}</span> / {scrapeTotal.old + scrapeTotal.new} Seiten{scrapeEta !== null ? <span style={{ color: '#64748b', fontWeight: 400 }}> (ca. {scrapeEta}s)</span> : ''}
+          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, color: '#818cf8', marginBottom: 8, fontWeight: 700, letterSpacing: 0.5 }}>
+            Scraping: <span style={{ color: '#fafafa' }}>{scrapeProgress.old + scrapeProgress.new}</span> / {scrapeTotal.old + scrapeTotal.new} Seiten{scrapeEta !== null ? <span style={{ color: '#a1a1aa', fontWeight: 400 }}> (ca. {scrapeEta}s)</span> : ''}
           </div>
           <div style={{ width: '100vw', display: 'flex', gap: 32, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
-              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#6366f1', letterSpacing: -0.5 }}>Analysierte alte URLs</h3>
-              <div style={{ background: '#fff', borderRadius: 18, padding: 18, minHeight: 120, boxShadow: '0 2px 16px #6366f122', border: '1.5px solid #e0e7ff', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {analysisOld.length === 0 ? <div style={{ color: '#ef4444', fontWeight: 600 }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
-                  <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: '10px 0', marginBottom: 2, transition: 'background 0.2s', background: u.error ? '#fef2f2' : 'transparent' }}>
-                    <div style={{ fontWeight: 700, color: '#6366f1', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
+              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#818cf8', letterSpacing: -0.5 }}>Analysierte alte URLs</h3>
+              <div style={{ background: '#232329', borderRadius: 8, padding: 18, minHeight: 120, border: '1px solid #27272a', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {analysisOld.length === 0 ? <div style={{ color: '#f87171', fontWeight: 600 }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                  <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: '10px 0', marginBottom: 2, background: u.error ? '#3f3f46' : 'transparent' }}>
+                    <div style={{ fontWeight: 700, color: '#818cf8', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
-                      <span><b>Status:</b> {u.status_code ?? u.status}</span>
-                      <span><b>Titel:</b> {u.title}</span>
-                      <span><b>Meta:</b> {u.meta_description}</span>
-                      <span><b>H1:</b> {u.h1_heading}</span>
+                      <span><b>Status:</b> <span style={{ color: '#a1a1aa' }}>{u.status_code ?? u.status}</span></span>
+                      <span><b>Titel:</b> <span style={{ color: '#a1a1aa' }}>{u.title}</span></span>
+                      <span><b>Meta:</b> <span style={{ color: '#a1a1aa' }}>{u.meta_description}</span></span>
+                      <span><b>H1:</b> <span style={{ color: '#a1a1aa' }}>{u.h1_heading}</span></span>
                     </div>
-                    <div style={{ color: '#64748b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
-                    {u.error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
+                    <div style={{ color: '#52525b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
+                    {u.error && <div style={{ color: '#f87171', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
                   </div>
                 ))}
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
-              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#ec4899', letterSpacing: -0.5 }}>Analysierte neue URLs</h3>
-              <div style={{ background: '#fff', borderRadius: 18, padding: 18, minHeight: 120, boxShadow: '0 2px 16px #ec489922', border: '1.5px solid #fce7f3', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {analysisNew.length === 0 ? <div style={{ color: '#ef4444', fontWeight: 600 }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
-                  <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: '10px 0', marginBottom: 2, transition: 'background 0.2s', background: u.error ? '#fef2f2' : 'transparent' }}>
-                    <div style={{ fontWeight: 700, color: '#ec4899', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
+              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#f472b6', letterSpacing: -0.5 }}>Analysierte neue URLs</h3>
+              <div style={{ background: '#232329', borderRadius: 8, padding: 18, minHeight: 120, border: '1px solid #27272a', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {analysisNew.length === 0 ? <div style={{ color: '#f87171', fontWeight: 600 }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                  <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: '10px 0', marginBottom: 2, background: u.error ? '#3f3f46' : 'transparent' }}>
+                    <div style={{ fontWeight: 700, color: '#f472b6', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
-                      <span><b>Status:</b> {u.status_code ?? u.status}</span>
-                      <span><b>Titel:</b> {u.title}</span>
-                      <span><b>Meta:</b> {u.meta_description}</span>
-                      <span><b>H1:</b> {u.h1_heading}</span>
+                      <span><b>Status:</b> <span style={{ color: '#a1a1aa' }}>{u.status_code ?? u.status}</span></span>
+                      <span><b>Titel:</b> <span style={{ color: '#a1a1aa' }}>{u.title}</span></span>
+                      <span><b>Meta:</b> <span style={{ color: '#a1a1aa' }}>{u.meta_description}</span></span>
+                      <span><b>H1:</b> <span style={{ color: '#a1a1aa' }}>{u.h1_heading}</span></span>
                     </div>
-                    <div style={{ color: '#64748b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
-                    {u.error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
+                    <div style={{ color: '#52525b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
+                    {u.error && <div style={{ color: '#f87171', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
                   </div>
                 ))}
               </div>
@@ -372,33 +372,33 @@ export default function TestPipeline() {
         <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           {/* Stats */}
           <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #6366f122', border: '2px solid #e0e7ff', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#6366f1', marginBottom: 4 }}>{stats.total}</div>
-              <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600 }}>Redirects</div>
+            <div style={{ background: '#232329', borderRadius: 8, border: '1px solid #27272a', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#818cf8', marginBottom: 4 }}>{stats.total}</div>
+              <div style={{ fontSize: 16, color: '#a1a1aa', fontWeight: 600 }}>Redirects</div>
             </div>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #ec489922', border: '2px solid #fce7f3', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#ec4899', marginBottom: 4 }}>{stats.ai}</div>
-              <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600 }}>AI-Matches</div>
+            <div style={{ background: '#232329', borderRadius: 8, border: '1px solid #27272a', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#f472b6', marginBottom: 4 }}>{stats.ai}</div>
+              <div style={{ fontSize: 16, color: '#a1a1aa', fontWeight: 600 }}>AI-Matches</div>
             </div>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #10b98122', border: '2px solid #d1fae5', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#10b981', marginBottom: 4 }}>{stats.confidence}%</div>
-              <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600 }}>Ø Confidence</div>
+            <div style={{ background: '#232329', borderRadius: 8, border: '1px solid #27272a', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#34d399', marginBottom: 4 }}>{stats.confidence}%</div>
+              <div style={{ fontSize: 16, color: '#a1a1aa', fontWeight: 600 }}>Ø Confidence</div>
             </div>
           </div>
           {/* Export-Box */}
-          <div style={{ background: '#fff', borderRadius: 24, boxShadow: '0 2px 24px #6366f122', border: '2px solid #e0e7ff', padding: '32px 24px', width: '100%', maxWidth: 900, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
+          <div style={{ background: '#232329', borderRadius: 8, border: '1px solid #27272a', padding: '32px 24px', width: '100%', maxWidth: 900, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
             <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
               {(['htaccess', 'nginx', 'csv'] as const).map(tab => (
                 <button key={tab} onClick={() => setResultTab(tab)} style={{
-                  padding: '12px 32px', fontSize: 18, fontWeight: 700, borderRadius: 16, border: resultTab === tab ? '2.5px solid #6366f1' : '2px solid #e0e7ff', background: resultTab === tab ? 'linear-gradient(90deg,#6366f1,#ec4899)' : '#f3f4f6', color: resultTab === tab ? '#fff' : '#6366f1', boxShadow: resultTab === tab ? '0 2px 12px #6366f122' : 'none', transition: 'all 0.2s', cursor: 'pointer' }}>
+                  padding: '12px 32px', fontSize: 18, fontWeight: 700, borderRadius: 8, border: resultTab === tab ? '1.5px solid #818cf8' : '1px solid #27272a', background: resultTab === tab ? '#232329' : 'transparent', color: resultTab === tab ? '#818cf8' : '#a1a1aa', transition: 'all 0.2s', cursor: 'pointer' }}>
                   {tab === 'htaccess' ? '.htaccess' : tab === 'nginx' ? 'Nginx' : 'CSV/Excel'}
                 </button>
               ))}
             </div>
-            <pre style={{ background: '#f9fafb', borderRadius: 16, padding: 18, fontSize: 16, width: '100%', minHeight: 120, maxHeight: 260, overflowY: 'auto', color: '#374151', fontFamily: 'monospace', border: '1.5px solid #e0e7ff', marginBottom: 8 }}>{exports[resultTab]}</pre>
+            <pre style={{ background: '#18181b', borderRadius: 8, padding: 18, fontSize: 16, width: '100%', minHeight: 120, maxHeight: 260, overflowY: 'auto', color: '#fafafa', fontFamily: 'monospace', border: '1px solid #27272a', marginBottom: 8 }}>{exports[resultTab]}</pre>
             <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'flex-end' }}>
-              <button onClick={() => { navigator.clipboard.writeText(exports[resultTab]); }} style={{ padding: '10px 32px', fontSize: 16, borderRadius: 12, background: 'linear-gradient(90deg,#10b981,#6366f1)', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px #10b98122' }}>Copy</button>
-              <a href={`data:text/plain;charset=utf-8,${encodeURIComponent(exports[resultTab])}`} download={`redirects.${resultTab === 'csv' ? 'csv' : 'txt'}`} style={{ padding: '10px 32px', fontSize: 16, borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#ec4899)', color: '#fff', fontWeight: 700, border: 'none', textDecoration: 'none', boxShadow: '0 2px 8px #6366f122' }}>Download</a>
+              <button onClick={() => { navigator.clipboard.writeText(exports[resultTab]); }} style={{ padding: '10px 32px', fontSize: 16, borderRadius: 8, background: '#232329', color: '#818cf8', fontWeight: 700, border: '1px solid #818cf8', cursor: 'pointer' }}>Copy</button>
+              <a href={`data:text/plain;charset=utf-8,${encodeURIComponent(exports[resultTab])}`} download={`redirects.${resultTab === 'csv' ? 'csv' : 'txt'}`} style={{ padding: '10px 32px', fontSize: 16, borderRadius: 8, background: '#232329', color: '#f472b6', fontWeight: 700, border: '1px solid #f472b6', textDecoration: 'none' }}>Download</a>
             </div>
           </div>
           {/* Detailansicht */}
@@ -409,26 +409,26 @@ export default function TestPipeline() {
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0, width: '100%' }}>
                   {/* Alte URL Box */}
-                  <div style={{ flex: 1, background: '#f3f4f6', borderRadius: 16, padding: 18, minWidth: 220, boxShadow: '0 2px 8px #6366f122', border: '1.5px solid #e0e7ff', marginRight: 0 }}>
-                    <div style={{ fontWeight: 700, color: '#6366f1', fontSize: 15, marginBottom: 2 }}>{oldData?.url || r.old_url?.url || r.old_url}</div>
-                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Titel:</b> {oldData?.title}</div>
-                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Meta:</b> {oldData?.meta_description}</div>
-                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>H1:</b> {oldData?.h1_heading}</div>
-                    <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 2 }}><b>Main:</b> {oldData?.main_content?.slice(0, 120) || ''}{oldData?.main_content && oldData.main_content.length > 120 ? '…' : ''}</div>
+                  <div style={{ flex: 1, background: '#232329', borderRadius: 8, padding: 18, minWidth: 220, border: '1px solid #27272a', marginRight: 0 }}>
+                    <div style={{ fontWeight: 700, color: '#818cf8', fontSize: 15, marginBottom: 2 }}>{oldData?.url || r.old_url?.url || r.old_url}</div>
+                    <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 2 }}><b>Titel:</b> {oldData?.title}</div>
+                    <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 2 }}><b>Meta:</b> {oldData?.meta_description}</div>
+                    <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 2 }}><b>H1:</b> {oldData?.h1_heading}</div>
+                    <div style={{ fontSize: 14, color: '#52525b', marginBottom: 2 }}><b>Main:</b> {oldData?.main_content?.slice(0, 120) || ''}{oldData?.main_content && oldData.main_content.length > 120 ? '…' : ''}</div>
                   </div>
                   {/* Pfeil */}
                   <div style={{ width: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                    <div style={{ width: 40, height: 2, background: 'linear-gradient(90deg,#6366f1,#ec4899)', position: 'relative' }}>
-                      <div style={{ position: 'absolute', right: -8, top: -6, width: 0, height: 0, borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '16px solid #ec4899' }} />
+                    <div style={{ width: 40, height: 2, background: 'linear-gradient(90deg,#818cf8,#f472b6)', position: 'relative' }}>
+                      <div style={{ position: 'absolute', right: -8, top: -6, width: 0, height: 0, borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '16px solid #f472b6' }} />
                     </div>
                   </div>
                   {/* Neue URL Box */}
-                  <div style={{ flex: 1, background: '#fff', borderRadius: 16, padding: 18, minWidth: 220, boxShadow: '0 2px 8px #ec489922', border: '1.5px solid #fce7f3', marginLeft: 0 }}>
-                    <div style={{ fontWeight: 700, color: '#ec4899', fontSize: 15, marginBottom: 2 }}>{newData?.url || r.new_url?.url || r.new_url}</div>
-                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Titel:</b> {newData?.title}</div>
-                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Meta:</b> {newData?.meta_description}</div>
-                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>H1:</b> {newData?.h1_heading}</div>
-                    <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 2 }}><b>Main:</b> {newData?.main_content?.slice(0, 120) || ''}{newData?.main_content && newData.main_content.length > 120 ? '…' : ''}</div>
+                  <div style={{ flex: 1, background: '#232329', borderRadius: 8, padding: 18, minWidth: 220, border: '1px solid #27272a', marginLeft: 0 }}>
+                    <div style={{ fontWeight: 700, color: '#f472b6', fontSize: 15, marginBottom: 2 }}>{newData?.url || r.new_url?.url || r.new_url}</div>
+                    <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 2 }}><b>Titel:</b> {newData?.title}</div>
+                    <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 2 }}><b>Meta:</b> {newData?.meta_description}</div>
+                    <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 2 }}><b>H1:</b> {newData?.h1_heading}</div>
+                    <div style={{ fontSize: 14, color: '#52525b', marginBottom: 2 }}><b>Main:</b> {newData?.main_content?.slice(0, 120) || ''}{newData?.main_content && newData.main_content.length > 120 ? '…' : ''}</div>
                   </div>
                 </div>
               );
@@ -438,7 +438,7 @@ export default function TestPipeline() {
       )}
       {resultError && (
         <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <div style={{ background: '#fef2f2', color: '#b91c1c', border: '2px solid #fecaca', borderRadius: 16, padding: '32px 48px', fontSize: 20, fontWeight: 700, marginTop: 32 }}>
+          <div style={{ background: '#3f3f46', color: '#f87171', border: '1.5px solid #f87171', borderRadius: 8, padding: '32px 48px', fontSize: 20, fontWeight: 700, marginTop: 32 }}>
             {resultError}
           </div>
         </div>
