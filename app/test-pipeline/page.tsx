@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { readExcelFile, validateUrls } from '../utils/excel';
 
 export default function TestPipeline() {
   const [oldUrls, setOldUrls] = useState('https://example.com/old-1\nhttps://example.com/old-2');
@@ -10,11 +11,37 @@ export default function TestPipeline() {
   const [maxRows, setMaxRows] = useState<number>(2);
   const [analysis, setAnalysis] = useState<any[]>([]);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [oldUploadStatus, setOldUploadStatus] = useState<string>('');
+  const [newUploadStatus, setNewUploadStatus] = useState<string>('');
 
   const oldUrlList = oldUrls.split('\n').map(u => u.trim()).filter(Boolean);
   const newUrlList = newUrls.split('\n').map(u => u.trim()).filter(Boolean);
 
   const appendLog = (msg: string) => setLog(l => [...l, msg]);
+
+  async function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>, type: 'old' | 'new') {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      if (type === 'old') setOldUploadStatus('Lade...');
+      if (type === 'new') setNewUploadStatus('Lade...');
+      const urls = validateUrls(await readExcelFile(file));
+      if (type === 'old') {
+        setOldUrls(urls.join('\n'));
+        setOldUploadStatus('Erfolgreich geladen!');
+      } else {
+        setNewUrls(urls.join('\n'));
+        setNewUploadStatus('Erfolgreich geladen!');
+      }
+    } catch {
+      if (type === 'old') setOldUploadStatus('Fehler beim Laden!');
+      if (type === 'new') setNewUploadStatus('Fehler beim Laden!');
+    }
+    setTimeout(() => {
+      setOldUploadStatus('');
+      setNewUploadStatus('');
+    }, 2000);
+  }
 
   async function runPipeline() {
     setLog([]);
@@ -83,6 +110,8 @@ export default function TestPipeline() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 0, width: '100vw' }}>
         <div style={{ flex: 1, minWidth: 0, padding: 0 }}>
           <label style={{ fontWeight: 600, marginLeft: 24 }}>Alte URLs (eine pro Zeile):</label>
+          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px' }} onChange={e => handleExcelUpload(e, 'old')} />
+          {oldUploadStatus && <span style={{ color: oldUploadStatus.includes('Fehler') ? '#ef4444' : '#10b981', marginLeft: 12 }}>{oldUploadStatus}</span>}
           <textarea rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 18, border: 'none', borderBottom: '2px solid #6366f1', borderRadius: 0, padding: 16, marginBottom: 8, background: '#f3f4f6', boxSizing: 'border-box', resize: 'vertical', minHeight: 180, maxHeight: 400, overflowY: 'auto' }} value={oldUrls} onChange={e => setOldUrls(e.target.value)} />
           <div style={{ color: '#6366f1', fontWeight: 500, marginBottom: 8, marginLeft: 24 }}>{oldUrlList.length} URLs importiert</div>
           <div style={{ background: '#f3f4f6', padding: 8, maxHeight: 180, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', borderRadius: 0, borderLeft: '4px solid #6366f1', boxSizing: 'border-box' }}>
@@ -91,6 +120,8 @@ export default function TestPipeline() {
         </div>
         <div style={{ flex: 1, minWidth: 0, padding: 0 }}>
           <label style={{ fontWeight: 600, marginLeft: 24 }}>Neue URLs (eine pro Zeile):</label>
+          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px' }} onChange={e => handleExcelUpload(e, 'new')} />
+          {newUploadStatus && <span style={{ color: newUploadStatus.includes('Fehler') ? '#ef4444' : '#10b981', marginLeft: 12 }}>{newUploadStatus}</span>}
           <textarea rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 18, border: 'none', borderBottom: '2px solid #ec4899', borderRadius: 0, padding: 16, marginBottom: 8, background: '#f3f4f6', boxSizing: 'border-box', resize: 'vertical', minHeight: 180, maxHeight: 400, overflowY: 'auto' }} value={newUrls} onChange={e => setNewUrls(e.target.value)} />
           <div style={{ color: '#ec4899', fontWeight: 500, marginBottom: 8, marginLeft: 24 }}>{newUrlList.length} URLs importiert</div>
           <div style={{ background: '#f3f4f6', padding: 8, maxHeight: 180, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', borderRadius: 0, borderLeft: '4px solid #ec4899', boxSizing: 'border-box' }}>
