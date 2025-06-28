@@ -260,11 +260,51 @@ export default function TestPipeline() {
       </div>
       {(scraping || scrapeProgress.old > 0 || scrapeProgress.new > 0) && (
         <div style={{ width: '100vw', marginBottom: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ width: 480, maxWidth: '90vw', background: '#f3f4f6', borderRadius: 8, overflow: 'hidden', marginBottom: 8, border: '1.5px solid #6366f1' }}>
-            <div style={{ height: 18, background: '#e0e7ff', width: `${Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%`, transition: 'width 0.3s', borderRadius: 8 }} />
+          <div style={{ width: 480, maxWidth: '90vw', background: '#f3f4f6', borderRadius: 16, overflow: 'hidden', marginBottom: 16, border: '2.5px solid #6366f1', boxShadow: '0 2px 16px #6366f122' }}>
+            <div style={{ height: 28, background: 'linear-gradient(90deg,#6366f1,#ec4899)', width: `${Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%`, transition: 'width 0.5s cubic-bezier(.4,2,.6,1)', borderRadius: 16, boxShadow: '0 2px 8px #6366f133', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
+              {Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%
+            </div>
           </div>
-          <div style={{ fontFamily: 'monospace', fontSize: 16, color: '#6366f1', marginBottom: 2 }}>
-            Scraping: {scrapeProgress.old + scrapeProgress.new} / {scrapeTotal.old + scrapeTotal.new} Seiten{scrapeEta !== null ? ` (ca. ${scrapeEta}s)` : ''}
+          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, color: '#6366f1', marginBottom: 8, fontWeight: 700, letterSpacing: 0.5 }}>
+            Scraping: <span style={{ color: '#111' }}>{scrapeProgress.old + scrapeProgress.new}</span> / {scrapeTotal.old + scrapeTotal.new} Seiten{scrapeEta !== null ? <span style={{ color: '#64748b', fontWeight: 400 }}> (ca. {scrapeEta}s)</span> : ''}
+          </div>
+          <div style={{ width: '100vw', display: 'flex', gap: 32, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
+              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#6366f1', letterSpacing: -0.5 }}>Analysierte alte URLs</h3>
+              <div style={{ background: '#fff', borderRadius: 18, padding: 18, minHeight: 120, boxShadow: '0 2px 16px #6366f122', border: '1.5px solid #e0e7ff', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {analysisOld.length === 0 ? <div style={{ color: '#ef4444', fontWeight: 600 }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                  <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: '10px 0', marginBottom: 2, transition: 'background 0.2s', background: u.error ? '#fef2f2' : 'transparent' }}>
+                    <div style={{ fontWeight: 700, color: '#6366f1', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
+                      <span><b>Status:</b> {u.status_code ?? u.status}</span>
+                      <span><b>Titel:</b> {u.title}</span>
+                      <span><b>Meta:</b> {u.meta_description}</span>
+                      <span><b>H1:</b> {u.h1_heading}</span>
+                    </div>
+                    <div style={{ color: '#64748b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
+                    {u.error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
+              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#ec4899', letterSpacing: -0.5 }}>Analysierte neue URLs</h3>
+              <div style={{ background: '#fff', borderRadius: 18, padding: 18, minHeight: 120, boxShadow: '0 2px 16px #ec489922', border: '1.5px solid #fce7f3', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {analysisNew.length === 0 ? <div style={{ color: '#ef4444', fontWeight: 600 }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                  <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: '10px 0', marginBottom: 2, transition: 'background 0.2s', background: u.error ? '#fef2f2' : 'transparent' }}>
+                    <div style={{ fontWeight: 700, color: '#ec4899', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
+                      <span><b>Status:</b> {u.status_code ?? u.status}</span>
+                      <span><b>Titel:</b> {u.title}</span>
+                      <span><b>Meta:</b> {u.meta_description}</span>
+                      <span><b>H1:</b> {u.h1_heading}</span>
+                    </div>
+                    <div style={{ color: '#64748b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
+                    {u.error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
