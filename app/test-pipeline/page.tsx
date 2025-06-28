@@ -48,6 +48,7 @@ export default function TestPipeline() {
   const scrapeStartRef = useRef<number>(0);
   const [resultTab, setResultTab] = useState<'htaccess'|'nginx'|'csv'>('htaccess');
   const [showResults, setShowResults] = useState(false);
+  const [resultError, setResultError] = useState<string | null>(null);
 
   const oldUrlList = oldUrls.split('\n').map(u => u.trim()).filter(Boolean);
   const newUrlList = newUrls.split('\n').map(u => u.trim()).filter(Boolean);
@@ -200,14 +201,28 @@ export default function TestPipeline() {
   // Nach Matching: Redirects laden und Results anzeigen
   useEffect(() => {
     if (!showAnalysis || !log.some(l => l.includes('Match:'))) return;
-    // Hole Redirects
     (async () => {
       const lastBatchId = log.find(l => l.includes('Batch:'))?.match(/"batchId":"([^"]+)"/i)?.[1];
-      if (!lastBatchId) return;
-      const res = await fetch(`/api/redirects?batchId=${lastBatchId}`);
-      const data = await res.json();
-      setRedirects(data.data || []);
-      setShowResults(true);
+      if (!lastBatchId) {
+        setResultError('Fehler: BatchId konnte nicht ermittelt werden. Bitte Pipeline erneut starten.');
+        setShowResults(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/redirects?batchId=${lastBatchId}`);
+        const data = await res.json();
+        if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
+          setResultError('Keine Redirects gefunden. Bitte Matching erneut durchführen.');
+          setShowResults(false);
+          return;
+        }
+        setRedirects(data.data);
+        setShowResults(true);
+        setResultError(null);
+      } catch (e) {
+        setResultError('Fehler beim Laden der Redirects.');
+        setShowResults(false);
+      }
     })();
   }, [showAnalysis, log]);
 
@@ -353,7 +368,7 @@ export default function TestPipeline() {
         </div>
       )}
       {/* Ergebnis-Screen */}
-      {showResults && (
+      {showResults && !resultError && (
         <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           {/* Stats */}
           <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -418,6 +433,13 @@ export default function TestPipeline() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+      {resultError && (
+        <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+          <div style={{ background: '#fef2f2', color: '#b91c1c', border: '2px solid #fecaca', borderRadius: 16, padding: '32px 48px', fontSize: 20, fontWeight: 700, marginTop: 32 }}>
+            {resultError}
           </div>
         </div>
       )}
