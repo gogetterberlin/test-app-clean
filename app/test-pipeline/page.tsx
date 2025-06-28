@@ -147,11 +147,12 @@ export default function TestPipeline() {
                 });
                 const data = await res.json();
                 results[i] = data;
+                console.log('Scrape API response', { type, i, data });
                 saveScrapeResults(batchId, type, results);
                 done++;
-                setScrapeProgress(p => ({ ...p, [type]: done }));
-                if (type === 'old') setAnalysisOld([...results]);
-                if (type === 'new') setAnalysisNew([...results]);
+                setScrapeProgress(p => { const next = { ...p, [type]: done }; console.log('setScrapeProgress', next); return next; });
+                if (type === 'old') { setAnalysisOld(arr => { console.log('setAnalysisOld', results); return [...results]; }); }
+                if (type === 'new') { setAnalysisNew(arr => { console.log('setAnalysisNew', results); return [...results]; }); }
                 updateEta();
                 running--;
                 setTimeout(next, 1200); // 1.2s Pause
