@@ -80,6 +80,7 @@ export default function TestPipeline() {
   }
 
   async function runPipeline() {
+    console.log('Starte runPipeline');
     setLog([]);
     setRedirects([]);
     setAnalysis([]);
@@ -110,6 +111,7 @@ export default function TestPipeline() {
 
       // Scraping-Queue für alt & neu
       async function scrapeQueue(urls: string[], type: 'old' | 'new', concurrency = 2) {
+        console.log('Starte scrapeQueue', {urls, type});
         let results = loadScrapeResults(batchId, type);
         let done = results.length;
         setScrapeProgress(p => ({ ...p, [type]: done }));
@@ -131,6 +133,7 @@ export default function TestPipeline() {
         etaInterval = setInterval(updateEta, 1000);
         return new Promise<any[]>(resolve => {
           async function next() {
+            console.log('Starte next() in scrapeQueue', {done, idx, running, urlsLen: urls.length});
             if (done >= urls.length) {
               clearInterval(etaInterval);
               resolve(results);
