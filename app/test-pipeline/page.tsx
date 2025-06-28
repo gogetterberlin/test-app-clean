@@ -242,175 +242,207 @@ export default function TestPipeline() {
   }), [redirects]);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-white via-slate-50 to-slate-100 text-gray-900 flex flex-col items-center px-0 md:px-0">
-      <header className="w-full py-10 px-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg mb-12">
-        <div className="flex items-center justify-between w-full max-w-7xl mx-auto px-6 md:px-12">
-          <div className="text-3xl md:text-4xl font-extrabold tracking-tight">SEO 301 Redirect Tool</div>
-          <div className="text-xs opacity-80">Inspired by Vercel</div>
+    <div style={{ width: '100vw', minHeight: '100vh', background: '#18181b', color: '#fafafa', padding: 0, margin: 0, boxSizing: 'border-box' }}>
+      <h2 style={{ fontSize: 32, fontWeight: 800, margin: '32px 0 24px 0', textAlign: 'center', letterSpacing: '-1px', color: '#fafafa' }}>Backend-Pipeline Test</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 0, width: '100vw' }}>
+        <div style={{ flex: 1, minWidth: 0, padding: 0 }}>
+          <label style={{ fontWeight: 600, marginLeft: 24, color: '#a1a1aa' }}>Alte URLs (eine pro Zeile):</label>
+          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px', color: '#fafafa' }} onChange={e => handleExcelUpload(e, 'old')} />
+          {oldUploadStatus && <span style={{ color: oldUploadStatus.includes('Fehler') ? '#f87171' : '#34d399', marginLeft: 12 }}>{oldUploadStatus}</span>}
+          <textarea rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 18, border: 'none', borderBottom: '1.5px solid #27272a', borderRadius: 0, padding: 16, marginBottom: 8, background: '#232329', color: '#fafafa', boxSizing: 'border-box', resize: 'vertical', minHeight: 180, maxHeight: 400, overflowY: 'auto' }} value={oldUrls} onChange={e => setOldUrls(e.target.value)} />
+          <div style={{ color: '#818cf8', fontWeight: 500, marginBottom: 8, marginLeft: 24 }}>{oldUrlList.length} URLs importiert</div>
+          <div style={{ background: '#232329', padding: 8, maxHeight: 180, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', borderRadius: 8, border: '1px solid #27272a', boxSizing: 'border-box' }}>
+            {oldUrlList.map((url, i) => <div key={i} style={{ whiteSpace: 'pre', overflowX: 'auto', fontSize: 16, color: '#fafafa' }}>{url}</div>)}
+          </div>
         </div>
-      </header>
-      <main className="w-full max-w-5xl flex-1 flex flex-col gap-12 items-center justify-start px-2 md:px-8">
-        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-8 mt-0">Backend-Pipeline Test</h2>
-        <section className="w-full flex flex-wrap gap-8 mb-8">
-          <div className="flex-1 min-w-[320px] bg-white rounded-3xl shadow-xl border border-indigo-100 p-8 flex flex-col gap-4">
-            <label className="font-bold text-lg text-indigo-700">Alte URLs (eine pro Zeile):</label>
-            <input type="file" accept=".xlsx,.xls,.csv" className="mb-2 mt-1 ml-0" onChange={e => handleExcelUpload(e, 'old')} />
-            {oldUploadStatus && <span className={oldUploadStatus.includes('Fehler') ? 'text-red-500' : 'text-emerald-500'}>{oldUploadStatus}</span>}
-            <textarea rows={10} className="w-full font-mono text-base border-0 border-b-2 border-indigo-400 rounded-none p-4 mb-2 bg-slate-50 resize-vertical min-h-[120px] max-h-[300px]" value={oldUrls} onChange={e => setOldUrls(e.target.value)} />
-            <div className="text-indigo-500 font-semibold mb-2">{oldUrlList.length} URLs importiert</div>
-            <div className="bg-slate-100 p-2 max-h-32 overflow-y-auto font-mono text-sm w-full border-l-4 border-indigo-400 rounded-md">
-              {oldUrlList.map((url, i) => <div key={i} className="truncate">{url}</div>)}
+        <div style={{ flex: 1, minWidth: 0, padding: 0 }}>
+          <label style={{ fontWeight: 600, marginLeft: 24, color: '#a1a1aa' }}>Neue URLs (eine pro Zeile):</label>
+          <input type="file" accept=".xlsx,.xls,.csv" style={{ margin: '8px 0 8px 24px', color: '#fafafa' }} onChange={e => handleExcelUpload(e, 'new')} />
+          {newUploadStatus && <span style={{ color: newUploadStatus.includes('Fehler') ? '#f87171' : '#34d399', marginLeft: 12 }}>{newUploadStatus}</span>}
+          <textarea rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 18, border: 'none', borderBottom: '1.5px solid #27272a', borderRadius: 0, padding: 16, marginBottom: 8, background: '#232329', color: '#fafafa', boxSizing: 'border-box', resize: 'vertical', minHeight: 180, maxHeight: 400, overflowY: 'auto' }} value={newUrls} onChange={e => setNewUrls(e.target.value)} />
+          <div style={{ color: '#f472b6', fontWeight: 500, marginBottom: 8, marginLeft: 24 }}>{newUrlList.length} URLs importiert</div>
+          <div style={{ background: '#232329', padding: 8, maxHeight: 180, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', borderRadius: 8, border: '1px solid #27272a', boxSizing: 'border-box' }}>
+            {newUrlList.map((url, i) => <div key={i} style={{ whiteSpace: 'pre', overflowX: 'auto', fontSize: 16, color: '#fafafa' }}>{url}</div>)}
+          </div>
+        </div>
+      </div>
+      <div style={{ margin: '32px 0 24px 0', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <label style={{ fontWeight: 600, marginRight: 12, color: '#a1a1aa' }}>Analysiere die ersten</label>
+        <input type="number" min={1} max={oldUrlList.length} value={maxRows} onChange={e => setMaxRows(Number(e.target.value))} style={{ width: 80, fontSize: 18, borderRadius: 6, padding: 6, marginRight: 8, border: '1.5px solid #27272a', background: '#232329', color: '#fafafa' }} />
+        <span style={{ color: '#a1a1aa', fontSize: 18 }}>Seiten</span>
+      </div>
+      <div style={{ width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
+        <button onClick={runPipeline} disabled={loading || scraping} style={{ padding: '18px 60px', fontSize: 22, borderRadius: 8, background: 'linear-gradient(90deg,#18181b,#232329)', color: '#fafafa', border: '1px solid #27272a', fontWeight: 700, letterSpacing: 1, cursor: loading || scraping ? 'not-allowed' : 'pointer', opacity: loading || scraping ? 0.5 : 1 }}>
+          {loading || scraping ? 'Bitte warten...' : 'Pipeline testen'}
+        </button>
+      </div>
+      <div style={{ fontFamily: 'monospace', fontSize: 16, background: '#232329', borderRadius: 8, padding: 18, marginBottom: 24, minHeight: 80, maxHeight: 220, overflowY: 'auto', width: '100vw', boxSizing: 'border-box', color: '#fafafa', border: '1px solid #27272a' }}>
+        {log.map((l, i) => <div key={i}>{l}</div>)}
+      </div>
+      {showAnalysis && (
+        <div style={{ marginBottom: 32, width: '100vw', display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 320 }}>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#6366f1' }}>Analysierte alte URLs (max. {maxRows})</h3>
+            <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box' }}>
+              {analysisOld.length === 0 ? <div style={{ color: '#ef4444' }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
+                  <div><b>URL:</b> {u.url}</div>
+                  <div><b>Status:</b> {u.status_code}</div>
+                  <div><b>Titel:</b> {u.title}</div>
+                  <div><b>Meta:</b> {u.meta_description}</div>
+                  <div><b>H1:</b> {u.h1_heading}</div>
+                  <div><b>Main:</b> <span style={{ color: '#64748b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="flex-1 min-w-[320px] bg-white rounded-3xl shadow-xl border border-pink-100 p-8 flex flex-col gap-4">
-            <label className="font-bold text-lg text-pink-700">Neue URLs (eine pro Zeile):</label>
-            <input type="file" accept=".xlsx,.xls,.csv" className="mb-2 mt-1 ml-0" onChange={e => handleExcelUpload(e, 'new')} />
-            {newUploadStatus && <span className={newUploadStatus.includes('Fehler') ? 'text-red-500' : 'text-emerald-500'}>{newUploadStatus}</span>}
-            <textarea rows={10} className="w-full font-mono text-base border-0 border-b-2 border-pink-400 rounded-none p-4 mb-2 bg-slate-50 resize-vertical min-h-[120px] max-h-[300px]" value={newUrls} onChange={e => setNewUrls(e.target.value)} />
-            <div className="text-pink-500 font-semibold mb-2">{newUrlList.length} URLs importiert</div>
-            <div className="bg-slate-100 p-2 max-h-32 overflow-y-auto font-mono text-sm w-full border-l-4 border-pink-400 rounded-md">
-              {newUrlList.map((url, i) => <div key={i} className="truncate">{url}</div>)}
+          <div style={{ flex: 1, minWidth: 320 }}>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#ec4899' }}>Analysierte neue URLs (max. {maxRows})</h3>
+            <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box' }}>
+              {analysisNew.length === 0 ? <div style={{ color: '#ef4444' }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
+                  <div><b>URL:</b> {u.url}</div>
+                  <div><b>Status:</b> {u.status_code}</div>
+                  <div><b>Titel:</b> {u.title}</div>
+                  <div><b>Meta:</b> {u.meta_description}</div>
+                  <div><b>H1:</b> {u.h1_heading}</div>
+                  <div><b>Main:</b> <span style={{ color: '#64748b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
+                </div>
+              ))}
             </div>
           </div>
-        </section>
-        <section className="w-full flex items-center justify-center gap-4 mb-8">
-          <label className="font-bold text-lg mr-2">Analysiere die ersten</label>
-          <input type="number" min={1} max={oldUrlList.length} value={maxRows} onChange={e => setMaxRows(Number(e.target.value))} className="w-20 text-lg rounded-md p-2 border-2 border-indigo-400" />
-          <span className="text-gray-500 text-lg">Seiten</span>
-        </section>
-        <section className="w-full flex items-center justify-center mb-12">
-          <button onClick={runPipeline} disabled={loading || scraping} className="px-16 py-5 text-2xl rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-extrabold shadow-xl hover:scale-105 hover:shadow-2xl transition disabled:opacity-40 disabled:scale-100">
-            {loading || scraping ? 'Bitte warten...' : 'Pipeline testen'}
-          </button>
-        </section>
-        <section className="w-full font-mono text-base bg-slate-100 rounded-2xl p-6 mb-8 min-h-[60px] max-h-[180px] overflow-y-auto shadow-inner border border-slate-200">
-          {log.map((l, i) => <div key={i}>{l}</div>)}
-        </section>
-        {/* Progress & Analyse */}
-        {(scraping || scrapeProgress.old > 0 || scrapeProgress.new > 0) && (
-          <section className="w-full flex flex-col items-center mb-12">
-            <div className="w-full max-w-xl bg-slate-100 rounded-2xl overflow-hidden mb-6 border-2 border-indigo-200 shadow">
-              <div className="h-8 bg-gradient-to-r from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg transition-all duration-500" style={{ width: `${Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%` }}>
-                {Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%
-              </div>
+        </div>
+      )}
+      <div style={{ width: '100vw' }}>
+        <b style={{ marginLeft: 24 }}>Gefundene Redirects:</b>
+        <pre style={{ background: '#111827', color: '#a7f3d0', borderRadius: 0, padding: 16, fontSize: 16, minHeight: 40, maxHeight: 220, overflowY: 'auto', width: '100vw', boxSizing: 'border-box' }}>{JSON.stringify(redirects, null, 2)}</pre>
+      </div>
+      {(scraping || scrapeProgress.old > 0 || scrapeProgress.new > 0) && (
+        <div style={{ width: '100vw', marginBottom: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ width: 480, maxWidth: '90vw', background: '#f3f4f6', borderRadius: 16, overflow: 'hidden', marginBottom: 16, border: '2.5px solid #6366f1', boxShadow: '0 2px 16px #6366f122' }}>
+            <div style={{ height: 28, background: 'linear-gradient(90deg,#6366f1,#ec4899)', width: `${Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%`, transition: 'width 0.5s cubic-bezier(.4,2,.6,1)', borderRadius: 16, boxShadow: '0 2px 8px #6366f133', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
+              {Math.round(((scrapeProgress.old + scrapeProgress.new) / (scrapeTotal.old + scrapeTotal.new || 1)) * 100)}%
             </div>
-            <div className="font-mono text-lg text-indigo-500 mb-4 font-bold">Scraping: <span className="text-black">{scrapeProgress.old + scrapeProgress.new}</span> / {scrapeTotal.old + scrapeTotal.new} Seiten{scrapeEta !== null ? <span className="text-gray-400 font-normal"> (ca. {scrapeEta}s)</span> : ''}</div>
-            <div className="w-full flex flex-wrap gap-8 justify-center mt-4">
-              <div className="flex-1 min-w-[320px] max-w-[600px]">
-                <h3 className="text-xl font-bold text-indigo-700 mb-2 text-center">Analysierte alte URLs</h3>
-                <div className="bg-white rounded-2xl p-6 min-h-[100px] shadow border border-indigo-100 max-h-[340px] overflow-y-auto flex flex-col gap-4">
-                  {analysisOld.length === 0 ? <div className="text-red-500 font-semibold">Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
-                    <div key={u.id || i} className={`border-b border-slate-200 pb-2 mb-2 transition ${u.error ? 'bg-red-50' : ''}`}>
-                      <div className="font-bold text-indigo-700 text-base mb-1">{u.url}</div>
-                      <div className="flex flex-wrap gap-4 text-base">
-                        <span><b>Status:</b> {u.status_code ?? u.status}</span>
-                        <span><b>Titel:</b> {u.title}</span>
-                        <span><b>Meta:</b> {u.meta_description}</span>
-                        <span><b>H1:</b> {u.h1_heading}</span>
-                      </div>
-                      <div className="text-gray-500 text-sm mt-1 whitespace-pre-line"><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
-                      {u.error && <div className="text-red-500 font-bold text-sm mt-2">Fehler: {u.error}</div>}
+          </div>
+          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, color: '#6366f1', marginBottom: 8, fontWeight: 700, letterSpacing: 0.5 }}>
+            Scraping: <span style={{ color: '#111' }}>{scrapeProgress.old + scrapeProgress.new}</span> / {scrapeTotal.old + scrapeTotal.new} Seiten{scrapeEta !== null ? <span style={{ color: '#64748b', fontWeight: 400 }}> (ca. {scrapeEta}s)</span> : ''}
+          </div>
+          <div style={{ width: '100vw', display: 'flex', gap: 32, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
+              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#6366f1', letterSpacing: -0.5 }}>Analysierte alte URLs</h3>
+              <div style={{ background: '#fff', borderRadius: 18, padding: 18, minHeight: 120, boxShadow: '0 2px 16px #6366f122', border: '1.5px solid #e0e7ff', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {analysisOld.length === 0 ? <div style={{ color: '#ef4444', fontWeight: 600 }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                  <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: '10px 0', marginBottom: 2, transition: 'background 0.2s', background: u.error ? '#fef2f2' : 'transparent' }}>
+                    <div style={{ fontWeight: 700, color: '#6366f1', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
+                      <span><b>Status:</b> {u.status_code ?? u.status}</span>
+                      <span><b>Titel:</b> {u.title}</span>
+                      <span><b>Meta:</b> {u.meta_description}</span>
+                      <span><b>H1:</b> {u.h1_heading}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex-1 min-w-[320px] max-w-[600px]">
-                <h3 className="text-xl font-bold text-pink-700 mb-2 text-center">Analysierte neue URLs</h3>
-                <div className="bg-white rounded-2xl p-6 min-h-[100px] shadow border border-pink-100 max-h-[340px] overflow-y-auto flex flex-col gap-4">
-                  {analysisNew.length === 0 ? <div className="text-red-500 font-semibold">Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
-                    <div key={u.id || i} className={`border-b border-slate-200 pb-2 mb-2 transition ${u.error ? 'bg-red-50' : ''}`}>
-                      <div className="font-bold text-pink-700 text-base mb-1">{u.url}</div>
-                      <div className="flex flex-wrap gap-4 text-base">
-                        <span><b>Status:</b> {u.status_code ?? u.status}</span>
-                        <span><b>Titel:</b> {u.title}</span>
-                        <span><b>Meta:</b> {u.meta_description}</span>
-                        <span><b>H1:</b> {u.h1_heading}</span>
-                      </div>
-                      <div className="text-gray-500 text-sm mt-1 whitespace-pre-line"><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
-                      {u.error && <div className="text-red-500 font-bold text-sm mt-2">Fehler: {u.error}</div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-        {/* Ergebnis-Screen */}
-        {showResults && !resultError && (
-          <section className="w-full flex flex-col items-center gap-12 mt-12">
-            {/* Stats */}
-            <div className="flex gap-12 mb-8 flex-wrap justify-center">
-              <div className="bg-white rounded-2xl shadow-xl border-2 border-indigo-100 p-8 min-w-[180px] text-center">
-                <div className="text-3xl font-extrabold text-indigo-500 mb-2">{stats.total}</div>
-                <div className="text-lg text-gray-500 font-semibold">Redirects</div>
-              </div>
-              <div className="bg-white rounded-2xl shadow-xl border-2 border-pink-100 p-8 min-w-[180px] text-center">
-                <div className="text-3xl font-extrabold text-pink-500 mb-2">{stats.ai}</div>
-                <div className="text-lg text-gray-500 font-semibold">AI-Matches</div>
-              </div>
-              <div className="bg-white rounded-2xl shadow-xl border-2 border-emerald-100 p-8 min-w-[180px] text-center">
-                <div className="text-3xl font-extrabold text-emerald-500 mb-2">{stats.confidence}%</div>
-                <div className="text-lg text-gray-500 font-semibold">Ø Confidence</div>
-              </div>
-            </div>
-            {/* Export-Box */}
-            <div className="bg-white rounded-3xl shadow-2xl border-2 border-indigo-100 p-10 w-full max-w-2xl mb-8 flex flex-col items-center gap-6">
-              <div className="flex gap-4 mb-4 items-center justify-center w-full">
-                {(['htaccess', 'nginx', 'csv'] as const).map(tab => (
-                  <button key={tab} onClick={() => setResultTab(tab)} className={`px-8 py-3 rounded-2xl text-lg font-bold transition-all duration-200 border-2 shadow-sm ${resultTab === tab ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white border-indigo-400 scale-105 shadow-xl' : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-indigo-50 hover:text-indigo-600'}`}>
-                    {tab === 'htaccess' ? '.htaccess' : tab === 'nginx' ? 'Nginx' : 'CSV/Excel'}
-                  </button>
+                    <div style={{ color: '#64748b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
+                    {u.error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
+                  </div>
                 ))}
               </div>
-              <pre className="bg-gray-50 rounded-xl p-6 text-base font-mono overflow-x-auto border border-gray-100 transition-all duration-150 w-full min-h-[120px] max-h-[220px] text-gray-700 shadow-inner">{exports[resultTab]}</pre>
-              <div className="flex gap-4 w-full justify-end">
-                <button onClick={() => { navigator.clipboard.writeText(exports[resultTab]); }} className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-indigo-400 text-white text-lg font-bold shadow-xl hover:scale-105 hover:shadow-2xl transition">Copy</button>
-                <a href={`data:text/plain;charset=utf-8,${encodeURIComponent(exports[resultTab])}`} download={`redirects.${resultTab === 'csv' ? 'csv' : 'txt'}`} className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-lg font-bold shadow-xl hover:scale-105 hover:shadow-2xl transition" >Download</a>
+            </div>
+            <div style={{ flex: 1, minWidth: 320, maxWidth: 600 }}>
+              <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 16px 0', textAlign: 'center', color: '#ec4899', letterSpacing: -0.5 }}>Analysierte neue URLs</h3>
+              <div style={{ background: '#fff', borderRadius: 18, padding: 18, minHeight: 120, boxShadow: '0 2px 16px #ec489922', border: '1.5px solid #fce7f3', maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {analysisNew.length === 0 ? <div style={{ color: '#ef4444', fontWeight: 600 }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                  <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: '10px 0', marginBottom: 2, transition: 'background 0.2s', background: u.error ? '#fef2f2' : 'transparent' }}>
+                    <div style={{ fontWeight: 700, color: '#ec4899', fontSize: 15, marginBottom: 2 }}>{u.url}</div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 15 }}>
+                      <span><b>Status:</b> {u.status_code ?? u.status}</span>
+                      <span><b>Titel:</b> {u.title}</span>
+                      <span><b>Meta:</b> {u.meta_description}</span>
+                      <span><b>H1:</b> {u.h1_heading}</span>
+                    </div>
+                    <div style={{ color: '#64748b', fontSize: 14, marginTop: 2, whiteSpace: 'pre-line' }}><b>Main:</b> {u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</div>
+                    {u.error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14, marginTop: 4 }}>Fehler: {u.error}</div>}
+                  </div>
+                ))}
               </div>
             </div>
-            {/* Detailansicht */}
-            <div className="w-full max-w-4xl flex flex-col gap-8">
-              {redirects.map((r, i) => {
-                const oldData = analysisOld.find(u => u.url === r.old_url?.url || u.url === r.old_url);
-                const newData = analysisNew.find(u => u.url === r.new_url?.url || u.url === r.new_url);
-                return (
-                  <div key={i} className="flex items-center gap-0 w-full">
-                    {/* Alte URL Box */}
-                    <div className="flex-1 bg-slate-100 rounded-2xl p-6 min-w-[220px] shadow border border-indigo-100 mr-0">
-                      <div className="font-bold text-indigo-700 text-base mb-1">{oldData?.url || r.old_url?.url || r.old_url}</div>
-                      <div className="text-base text-gray-500 mb-1"><b>Titel:</b> {oldData?.title}</div>
-                      <div className="text-base text-gray-500 mb-1"><b>Meta:</b> {oldData?.meta_description}</div>
-                      <div className="text-base text-gray-500 mb-1"><b>H1:</b> {oldData?.h1_heading}</div>
-                      <div className="text-sm text-gray-400 mb-1"><b>Main:</b> {oldData?.main_content?.slice(0, 120) || ''}{oldData?.main_content && oldData.main_content.length > 120 ? '…' : ''}</div>
-                    </div>
-                    {/* Pfeil */}
-                    <div className="w-16 flex items-center justify-center h-full">
-                      <div className="w-10 h-1 bg-gradient-to-r from-indigo-400 to-pink-400 relative">
-                        <div className="absolute right-[-10px] top-[-7px] w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-pink-400" />
-                      </div>
-                    </div>
-                    {/* Neue URL Box */}
-                    <div className="flex-1 bg-white rounded-2xl p-6 min-w-[220px] shadow border border-pink-100 ml-0">
-                      <div className="font-bold text-pink-700 text-base mb-1">{newData?.url || r.new_url?.url || r.new_url}</div>
-                      <div className="text-base text-gray-500 mb-1"><b>Titel:</b> {newData?.title}</div>
-                      <div className="text-base text-gray-500 mb-1"><b>Meta:</b> {newData?.meta_description}</div>
-                      <div className="text-base text-gray-500 mb-1"><b>H1:</b> {newData?.h1_heading}</div>
-                      <div className="text-sm text-gray-400 mb-1"><b>Main:</b> {newData?.main_content?.slice(0, 120) || ''}{newData?.main_content && newData.main_content.length > 120 ? '…' : ''}</div>
+          </div>
+        </div>
+      )}
+      {/* Ergebnis-Screen */}
+      {showResults && !resultError && (
+        <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #6366f122', border: '2px solid #e0e7ff', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#6366f1', marginBottom: 4 }}>{stats.total}</div>
+              <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600 }}>Redirects</div>
+            </div>
+            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #ec489922', border: '2px solid #fce7f3', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#ec4899', marginBottom: 4 }}>{stats.ai}</div>
+              <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600 }}>AI-Matches</div>
+            </div>
+            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #10b98122', border: '2px solid #d1fae5', padding: '24px 36px', minWidth: 180, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#10b981', marginBottom: 4 }}>{stats.confidence}%</div>
+              <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600 }}>Ø Confidence</div>
+            </div>
+          </div>
+          {/* Export-Box */}
+          <div style={{ background: '#fff', borderRadius: 24, boxShadow: '0 2px 24px #6366f122', border: '2px solid #e0e7ff', padding: '32px 24px', width: '100%', maxWidth: 900, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+              {(['htaccess', 'nginx', 'csv'] as const).map(tab => (
+                <button key={tab} onClick={() => setResultTab(tab)} style={{
+                  padding: '12px 32px', fontSize: 18, fontWeight: 700, borderRadius: 16, border: resultTab === tab ? '2.5px solid #6366f1' : '2px solid #e0e7ff', background: resultTab === tab ? 'linear-gradient(90deg,#6366f1,#ec4899)' : '#f3f4f6', color: resultTab === tab ? '#fff' : '#6366f1', boxShadow: resultTab === tab ? '0 2px 12px #6366f122' : 'none', transition: 'all 0.2s', cursor: 'pointer' }}>
+                  {tab === 'htaccess' ? '.htaccess' : tab === 'nginx' ? 'Nginx' : 'CSV/Excel'}
+                </button>
+              ))}
+            </div>
+            <pre style={{ background: '#f9fafb', borderRadius: 16, padding: 18, fontSize: 16, width: '100%', minHeight: 120, maxHeight: 260, overflowY: 'auto', color: '#374151', fontFamily: 'monospace', border: '1.5px solid #e0e7ff', marginBottom: 8 }}>{exports[resultTab]}</pre>
+            <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'flex-end' }}>
+              <button onClick={() => { navigator.clipboard.writeText(exports[resultTab]); }} style={{ padding: '10px 32px', fontSize: 16, borderRadius: 12, background: 'linear-gradient(90deg,#10b981,#6366f1)', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px #10b98122' }}>Copy</button>
+              <a href={`data:text/plain;charset=utf-8,${encodeURIComponent(exports[resultTab])}`} download={`redirects.${resultTab === 'csv' ? 'csv' : 'txt'}`} style={{ padding: '10px 32px', fontSize: 16, borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#ec4899)', color: '#fff', fontWeight: 700, border: 'none', textDecoration: 'none', boxShadow: '0 2px 8px #6366f122' }}>Download</a>
+            </div>
+          </div>
+          {/* Detailansicht */}
+          <div style={{ width: '100%', maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {redirects.map((r, i) => {
+              const oldData = analysisOld.find(u => u.url === r.old_url?.url || u.url === r.old_url);
+              const newData = analysisNew.find(u => u.url === r.new_url?.url || u.url === r.new_url);
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0, width: '100%' }}>
+                  {/* Alte URL Box */}
+                  <div style={{ flex: 1, background: '#f3f4f6', borderRadius: 16, padding: 18, minWidth: 220, boxShadow: '0 2px 8px #6366f122', border: '1.5px solid #e0e7ff', marginRight: 0 }}>
+                    <div style={{ fontWeight: 700, color: '#6366f1', fontSize: 15, marginBottom: 2 }}>{oldData?.url || r.old_url?.url || r.old_url}</div>
+                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Titel:</b> {oldData?.title}</div>
+                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Meta:</b> {oldData?.meta_description}</div>
+                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>H1:</b> {oldData?.h1_heading}</div>
+                    <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 2 }}><b>Main:</b> {oldData?.main_content?.slice(0, 120) || ''}{oldData?.main_content && oldData.main_content.length > 120 ? '…' : ''}</div>
+                  </div>
+                  {/* Pfeil */}
+                  <div style={{ width: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <div style={{ width: 40, height: 2, background: 'linear-gradient(90deg,#6366f1,#ec4899)', position: 'relative' }}>
+                      <div style={{ position: 'absolute', right: -8, top: -6, width: 0, height: 0, borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '16px solid #ec4899' }} />
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-        {resultError && (
-          <section className="w-full flex flex-col items-center gap-12 mt-12">
-            <div className="bg-red-50 text-red-700 border-2 border-red-200 rounded-2xl p-10 text-2xl font-bold mt-12">
-              {resultError}
-            </div>
-          </section>
-        )}
-      </main>
+                  {/* Neue URL Box */}
+                  <div style={{ flex: 1, background: '#fff', borderRadius: 16, padding: 18, minWidth: 220, boxShadow: '0 2px 8px #ec489922', border: '1.5px solid #fce7f3', marginLeft: 0 }}>
+                    <div style={{ fontWeight: 700, color: '#ec4899', fontSize: 15, marginBottom: 2 }}>{newData?.url || r.new_url?.url || r.new_url}</div>
+                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Titel:</b> {newData?.title}</div>
+                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>Meta:</b> {newData?.meta_description}</div>
+                    <div style={{ fontSize: 15, color: '#64748b', marginBottom: 2 }}><b>H1:</b> {newData?.h1_heading}</div>
+                    <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 2 }}><b>Main:</b> {newData?.main_content?.slice(0, 120) || ''}{newData?.main_content && newData.main_content.length > 120 ? '…' : ''}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {resultError && (
+        <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+          <div style={{ background: '#fef2f2', color: '#b91c1c', border: '2px solid #fecaca', borderRadius: 16, padding: '32px 48px', fontSize: 20, fontWeight: 700, marginTop: 32 }}>
+            {resultError}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
