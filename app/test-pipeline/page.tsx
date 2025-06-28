@@ -10,6 +10,8 @@ export default function TestPipeline() {
   const [loading, setLoading] = useState(false);
   const [maxRows, setMaxRows] = useState<number>(2);
   const [analysis, setAnalysis] = useState<any[]>([]);
+  const [analysisOld, setAnalysisOld] = useState<any[]>([]);
+  const [analysisNew, setAnalysisNew] = useState<any[]>([]);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [oldUploadStatus, setOldUploadStatus] = useState<string>('');
   const [newUploadStatus, setNewUploadStatus] = useState<string>('');
@@ -47,6 +49,8 @@ export default function TestPipeline() {
     setLog([]);
     setRedirects([]);
     setAnalysis([]);
+    setAnalysisOld([]);
+    setAnalysisNew([]);
     setShowAnalysis(false);
     setLoading(true);
     try {
@@ -87,9 +91,12 @@ export default function TestPipeline() {
 
       appendLog('4. Analysierte URLs abfragen...');
       // Hole die gescrapten/analysierten URLs (maxRows, Reihenfolge wie Import)
-      const urlsRes = await fetch(`/api/urls?batchId=${batchId}&type=new`);
-      const urlsData = await urlsRes.json();
-      setAnalysis((urlsData.data || []).slice(0, maxRows));
+      const urlsOldRes = await fetch(`/api/urls?batchId=${batchId}&type=old`);
+      const urlsOldData = await urlsOldRes.json();
+      setAnalysisOld((urlsOldData.data || []).slice(0, maxRows));
+      const urlsNewRes = await fetch(`/api/urls?batchId=${batchId}&type=new`);
+      const urlsNewData = await urlsNewRes.json();
+      setAnalysisNew((urlsNewData.data || []).slice(0, maxRows));
       setShowAnalysis(true);
 
       appendLog('5. Redirects abfragen...');
@@ -143,18 +150,36 @@ export default function TestPipeline() {
         {log.map((l, i) => <div key={i}>{l}</div>)}
       </div>
       {showAnalysis && (
-        <div style={{ marginBottom: 32, width: '100vw' }}>
-          <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center' }}>Screen 2: Analysierte neue URLs (max. {maxRows})</h3>
-          <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100vw', boxSizing: 'border-box' }}>
-            {analysis.length === 0 ? <div style={{ color: '#ef4444' }}>Keine neuen URLs analysiert.</div> : analysis.map((u, i) => (
-              <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
-                <div><b>URL:</b> {u.url}</div>
-                <div><b>Status:</b> {u.status_code}</div>
-                <div><b>Titel:</b> {u.title}</div>
-                <div><b>Meta:</b> {u.meta_description}</div>
-                <div><b>H1:</b> {u.h1_heading}</div>
-              </div>
-            ))}
+        <div style={{ marginBottom: 32, width: '100vw', display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 320 }}>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#6366f1' }}>Analysierte alte URLs (max. {maxRows})</h3>
+            <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box' }}>
+              {analysisOld.length === 0 ? <div style={{ color: '#ef4444' }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
+                <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
+                  <div><b>URL:</b> {u.url}</div>
+                  <div><b>Status:</b> {u.status_code}</div>
+                  <div><b>Titel:</b> {u.title}</div>
+                  <div><b>Meta:</b> {u.meta_description}</div>
+                  <div><b>H1:</b> {u.h1_heading}</div>
+                  <div><b>Main:</b> <span style={{ color: '#64748b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 320 }}>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#ec4899' }}>Analysierte neue URLs (max. {maxRows})</h3>
+            <div style={{ background: '#f9fafb', borderRadius: 0, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box' }}>
+              {analysisNew.length === 0 ? <div style={{ color: '#ef4444' }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
+                <div key={u.id || i} style={{ borderBottom: '1px solid #e5e7eb', padding: 10 }}>
+                  <div><b>URL:</b> {u.url}</div>
+                  <div><b>Status:</b> {u.status_code}</div>
+                  <div><b>Titel:</b> {u.title}</div>
+                  <div><b>Meta:</b> {u.meta_description}</div>
+                  <div><b>H1:</b> {u.h1_heading}</div>
+                  <div><b>Main:</b> <span style={{ color: '#64748b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
