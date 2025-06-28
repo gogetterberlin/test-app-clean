@@ -279,44 +279,6 @@ export default function TestPipeline() {
       <div style={{ fontFamily: 'monospace', fontSize: 16, background: '#232329', borderRadius: 8, padding: 18, marginBottom: 24, minHeight: 80, maxHeight: 220, overflowY: 'auto', width: '100vw', boxSizing: 'border-box', color: '#fafafa', border: '1px solid #27272a' }}>
         {log.map((l, i) => <div key={i}>{l}</div>)}
       </div>
-      {showAnalysis && (
-        <div style={{ marginBottom: 32, width: '100vw', display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 320 }}>
-            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#818cf8' }}>Analysierte alte URLs (max. {maxRows})</h3>
-            <div style={{ background: '#232329', borderRadius: 8, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', border: '1px solid #27272a' }}>
-              {analysisOld.length === 0 ? <div style={{ color: '#f87171' }}>Keine alten URLs analysiert.</div> : analysisOld.map((u, i) => (
-                <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: 10 }}>
-                  <div><b style={{ color: '#818cf8' }}>URL:</b> {u.url}</div>
-                  <div><b>Status:</b> <span style={{ color: '#a1a1aa' }}>{u.status_code}</span></div>
-                  <div><b>Titel:</b> <span style={{ color: '#a1a1aa' }}>{u.title}</span></div>
-                  <div><b>Meta:</b> <span style={{ color: '#a1a1aa' }}>{u.meta_description}</span></div>
-                  <div><b>H1:</b> <span style={{ color: '#a1a1aa' }}>{u.h1_heading}</span></div>
-                  <div><b>Main:</b> <span style={{ color: '#52525b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ flex: 1, minWidth: 320 }}>
-            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '24px 0 12px 0', textAlign: 'center', color: '#f472b6' }}>Analysierte neue URLs (max. {maxRows})</h3>
-            <div style={{ background: '#232329', borderRadius: 8, padding: 18, maxHeight: 340, overflowY: 'auto', fontFamily: 'monospace', fontSize: 16, width: '100%', boxSizing: 'border-box', border: '1px solid #27272a' }}>
-              {analysisNew.length === 0 ? <div style={{ color: '#f87171' }}>Keine neuen URLs analysiert.</div> : analysisNew.map((u, i) => (
-                <div key={u.id || i} style={{ borderBottom: '1px solid #27272a', padding: 10 }}>
-                  <div><b style={{ color: '#f472b6' }}>URL:</b> {u.url}</div>
-                  <div><b>Status:</b> <span style={{ color: '#a1a1aa' }}>{u.status_code}</span></div>
-                  <div><b>Titel:</b> <span style={{ color: '#a1a1aa' }}>{u.title}</span></div>
-                  <div><b>Meta:</b> <span style={{ color: '#a1a1aa' }}>{u.meta_description}</span></div>
-                  <div><b>H1:</b> <span style={{ color: '#a1a1aa' }}>{u.h1_heading}</span></div>
-                  <div><b>Main:</b> <span style={{ color: '#52525b' }}>{u.main_content?.slice(0, 200) || ''}{u.main_content && u.main_content.length > 200 ? '…' : ''}</span></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      <div style={{ width: '100vw' }}>
-        <b style={{ marginLeft: 24, color: '#a1a1aa' }}>Gefundene Redirects:</b>
-        <pre style={{ background: '#18181b', color: '#a7f3d0', borderRadius: 8, padding: 16, fontSize: 16, minHeight: 40, maxHeight: 220, overflowY: 'auto', width: '100vw', boxSizing: 'border-box', border: '1px solid #27272a' }}>{JSON.stringify(redirects, null, 2)}</pre>
-      </div>
       {(scraping || scrapeProgress.old > 0 || scrapeProgress.new > 0) && (
         <div style={{ width: '100vw', marginBottom: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ width: 480, maxWidth: '90vw', background: '#232329', borderRadius: 8, overflow: 'hidden', marginBottom: 16, border: '1.5px solid #27272a' }}>
@@ -368,7 +330,7 @@ export default function TestPipeline() {
         </div>
       )}
       {/* Ergebnis-Screen */}
-      {showResults && !resultError && (
+      {showAnalysis && !resultError && (
         <div style={{ width: '100vw', margin: '48px 0 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           {/* Stats */}
           <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
