@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
       .eq('type', 'new');
     if (newError) throw newError;
 
+    console.log('--- MATCHING DEBUG ---');
+    console.log('BatchId:', batchId);
+    console.log('Alte URLs:', oldUrls.length);
+    console.log('Neue URLs:', newUrls.length);
+
     // Für jede alte URL: Matching durchführen
     for (const oldUrl of oldUrls) {
       const prompt = buildPrompt(oldUrl, newUrls);
@@ -62,15 +67,16 @@ export async function POST(req: NextRequest) {
           match_type: 'ai',
         });
         if (insertError) {
-          console.error('Fehler beim Insert:', insertError);
+          console.error('Fehler beim Insert:', insertError, 'Für:', oldUrl.url, '->', match.url);
         } else {
           console.log('Redirect gespeichert:', oldUrl.url, '->', match.url);
         }
       } else {
-        console.warn('Kein Match gefunden für:', oldUrl.url);
+        console.warn('Kein Match gefunden für:', oldUrl.url, '| AI Antwort:', bestNewUrl);
       }
     }
 
+    console.log('--- MATCHING ENDE ---');
     return NextResponse.json({ success: true });
   } catch (e: any) {
     console.error('Fehler im Matching:', e);
