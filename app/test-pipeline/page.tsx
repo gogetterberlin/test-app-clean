@@ -150,8 +150,8 @@ export default function TestPipeline() {
                 saveScrapeResults(batchId, type, results);
                 done++;
                 setScrapeProgress(p => ({ ...p, [type]: done }));
-                setAnalysisOld(type === 'old' ? [...results] : a => a);
-                setAnalysisNew(type === 'new' ? [...results] : a => a);
+                if (type === 'old') setAnalysisOld([...results]);
+                if (type === 'new') setAnalysisNew([...results]);
                 updateEta();
                 running--;
                 setTimeout(next, 1200); // 1.2s Pause
