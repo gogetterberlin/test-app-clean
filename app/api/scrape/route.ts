@@ -123,24 +123,27 @@ export async function POST(req: NextRequest) {
       .order('order', { ascending: true });
     if (newError) throw newError;
 
-    // Nur die ersten maxRows URLs pro Typ SCRAPEN (wenn gesetzt), aber alle neuen URLs bleiben persistent
-    const limitedOld = maxRows ? oldUrls.slice(0, maxRows) : oldUrls;
+    // Nur die ERSTE URL pro Typ crawlen
+    const firstOld = oldUrls[0] ? [oldUrls[0]] : [];
+    const firstNew = newUrls[0] ? [newUrls[0]] : [];
 
-    // Scrape alt (maxRows)
-    for (const row of limitedOld) {
+    // Scrape alt (nur erste URL)
+    for (const row of firstOld) {
       const result = await fetchTitleStatusContentAndMeta(row.url);
       await supabase.from('urls').update({ title: result.title, status_code: result.status, main_content: result.main_content, meta_description: result.meta_description, h1_heading: result.h1_heading }).eq('id', row.id);
       if (result.error) {
         console.error('[Scrape Error][OLD]', row.url, result.error);
       }
+      console.log('[Scrape][OLD] Memory usage:', process.memoryUsage());
     }
-    // Scrape neu (ALLE neuen URLs, unabhängig von maxRows)
-    for (const row of newUrls) {
+    // Scrape neu (nur erste URL)
+    for (const row of firstNew) {
       const result = await fetchTitleStatusContentAndMeta(row.url);
       await supabase.from('urls').update({ title: result.title, status_code: result.status, main_content: result.main_content, meta_description: result.meta_description, h1_heading: result.h1_heading }).eq('id', row.id);
       if (result.error) {
         console.error('[Scrape Error][NEW]', row.url, result.error);
       }
+      console.log('[Scrape][NEW] Memory usage:', process.memoryUsage());
     }
 
     return NextResponse.json({ success: true });
