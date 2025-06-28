@@ -122,15 +122,14 @@ export async function POST(req: NextRequest) {
 
     // Nur die ersten maxRows URLs pro Typ SCRAPEN (wenn gesetzt), aber alle neuen URLs bleiben persistent
     const limitedOld = maxRows ? oldUrls.slice(0, maxRows) : oldUrls;
-    const limitedNew = maxRows ? newUrls.slice(0, maxRows) : newUrls;
 
-    // Scrape alt
+    // Scrape alt (maxRows)
     for (const row of limitedOld) {
       const { title, status, main_content, meta_description, h1_heading } = await fetchTitleStatusContentAndMeta(row.url);
       await supabase.from('urls').update({ title, status_code: status, main_content, meta_description, h1_heading }).eq('id', row.id);
     }
-    // Scrape neu
-    for (const row of limitedNew) {
+    // Scrape neu (ALLE neuen URLs, unabhängig von maxRows)
+    for (const row of newUrls) {
       const { title, status, main_content, meta_description, h1_heading } = await fetchTitleStatusContentAndMeta(row.url);
       await supabase.from('urls').update({ title, status_code: status, main_content, meta_description, h1_heading }).eq('id', row.id);
     }
