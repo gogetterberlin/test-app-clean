@@ -109,16 +109,18 @@ export async function POST(req: NextRequest) {
       .from('urls')
       .select('id, url')
       .eq('batch_id', batchId)
-      .eq('type', 'old');
+      .eq('type', 'old')
+      .order('order', { ascending: true });
     if (oldError) throw oldError;
     const { data: newUrls, error: newError } = await supabase
       .from('urls')
       .select('id, url')
       .eq('batch_id', batchId)
-      .eq('type', 'new');
+      .eq('type', 'new')
+      .order('order', { ascending: true });
     if (newError) throw newError;
 
-    // Nur die ersten maxRows URLs pro Typ verarbeiten (wenn gesetzt)
+    // Nur die ersten maxRows URLs pro Typ SCRAPEN (wenn gesetzt), aber alle neuen URLs bleiben persistent
     const limitedOld = maxRows ? oldUrls.slice(0, maxRows) : oldUrls;
     const limitedNew = maxRows ? newUrls.slice(0, maxRows) : newUrls;
 

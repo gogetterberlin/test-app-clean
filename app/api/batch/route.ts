@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
 
     // 2. URLs speichern
     const urlRows = [
-      ...oldUrls.map((url: string) => ({ batch_id: batch.id, url, type: 'old' })),
-      ...newUrls.map((url: string) => ({ batch_id: batch.id, url, type: 'new' })),
+      ...oldUrls.map((url: string, i: number) => ({ batch_id: batch.id, url, type: 'old', order: i })),
+      ...newUrls.map((url: string, i: number) => ({ batch_id: batch.id, url, type: 'new', order: i })),
     ];
     const { error: urlError } = await supabase.from('urls').insert(urlRows);
     if (urlError) throw urlError;

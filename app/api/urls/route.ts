@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   }
   let query = supabase.from('urls').select('*').eq('batch_id', batchId);
   if (type) query = query.eq('type', type);
+  query = query.order('order', { ascending: true });
   const { data, error } = await query;
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

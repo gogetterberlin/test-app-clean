@@ -35,21 +35,24 @@ export async function POST(req: NextRequest) {
       .from('urls')
       .select('*')
       .eq('batch_id', batchId)
-      .eq('type', 'old');
+      .eq('type', 'old')
+      .order('order', { ascending: true });
     if (oldError) throw oldError;
 
-    // Neue URLs holen
+    // Neue URLs holen (ALLE, nicht nur gescrapte)
     const { data: newUrls, error: newError } = await supabase
       .from('urls')
       .select('*')
       .eq('batch_id', batchId)
-      .eq('type', 'new');
+      .eq('type', 'new')
+      .order('order', { ascending: true });
     if (newError) throw newError;
 
+    // Debug: Ausgabe der echten Scrape-Ergebnisse
     console.log('--- MATCHING DEBUG ---');
     console.log('BatchId:', batchId);
-    console.log('Alte URLs:', oldUrls.length);
-    console.log('Neue URLs:', newUrls.length);
+    console.log('Alte URLs:', JSON.stringify(oldUrls, null, 2));
+    console.log('Neue URLs:', JSON.stringify(newUrls, null, 2));
 
     // Für jede alte URL: Matching durchführen
     for (const oldUrl of oldUrls) {
