@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '../../supabase/client';
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
 
@@ -63,14 +62,13 @@ function extractMainContent(document: Document): string | null {
   return null;
 }
 
-async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: string | null, status: number, main_content: string | null, meta_description: string | null, h1_heading: string | null, error?: string }> {
+async function scrapeUrl(url: string) {
   try {
     const res = await fetch(url, { method: 'GET', redirect: 'follow' });
     const status = res.status;
     const html = await res.text();
     const dom = new JSDOM(html, { url });
     const doc = dom.window.document;
-    // Readability + Fallbacks
     let title = null;
     let main_content = null;
     try {
@@ -81,16 +79,14 @@ async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: str
     } catch (e) {
       console.error('[Readability Error]', url, e);
     }
-    // Fallbacks falls leer
     if (!title) title = extractTitle(doc);
     if (!main_content || main_content.length < 40) main_content = extractMainContent(doc);
     const metaDescription = extractMetaDescription(doc);
     const h1Heading = extractH1Heading(doc);
-    // Debug-Log
-    console.log(`[Scrape] ${url} | Title: ${title} | Meta: ${metaDescription} | H1: ${h1Heading} | Main: ${main_content?.slice(0, 60)}`);
     return {
-      title,
+      url,
       status,
+      title,
       main_content,
       meta_description: metaDescription,
       h1_heading: h1Heading,
@@ -98,55 +94,16 @@ async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: str
   } catch (e: any) {
     const errMsg = `[Scrape Error] ${url} | ${e?.message || e}`;
     console.error(errMsg, e?.stack || e);
-    return { title: null, status: 0, main_content: null, meta_description: null, h1_heading: null, error: errMsg + (e?.stack ? '\n' + e.stack : '') };
+    return { url, status: 0, title: null, main_content: null, meta_description: null, h1_heading: null, error: errMsg + (e?.stack ? '\n' + e.stack : '') };
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { batchId, maxRows } = await req.json();
-    if (!batchId) return NextResponse.json({ error: 'batchId required' }, { status: 400 });
-
-    // Beide Typen holen
-    const { data: oldUrls, error: oldError } = await supabase
-      .from('urls')
-      .select('id, url')
-      .eq('batch_id', batchId)
-      .eq('type', 'old')
-      .order('order', { ascending: true });
-    if (oldError) throw oldError;
-    const { data: newUrls, error: newError } = await supabase
-      .from('urls')
-      .select('id, url')
-      .eq('batch_id', batchId)
-      .eq('type', 'new')
-      .order('order', { ascending: true });
-    if (newError) throw newError;
-
-    // Nur die ERSTE URL pro Typ crawlen
-    const firstOld = oldUrls[0] ? [oldUrls[0]] : [];
-    const firstNew = newUrls[0] ? [newUrls[0]] : [];
-
-    // Scrape alt (nur erste URL)
-    for (const row of firstOld) {
-      const result = await fetchTitleStatusContentAndMeta(row.url);
-      await supabase.from('urls').update({ title: result.title, status_code: result.status, main_content: result.main_content, meta_description: result.meta_description, h1_heading: result.h1_heading }).eq('id', row.id);
-      if (result.error) {
-        console.error('[Scrape Error][OLD]', row.url, result.error);
-      }
-      console.log('[Scrape][OLD] Memory usage:', process.memoryUsage());
-    }
-    // Scrape neu (nur erste URL)
-    for (const row of firstNew) {
-      const result = await fetchTitleStatusContentAndMeta(row.url);
-      await supabase.from('urls').update({ title: result.title, status_code: result.status, main_content: result.main_content, meta_description: result.meta_description, h1_heading: result.h1_heading }).eq('id', row.id);
-      if (result.error) {
-        console.error('[Scrape Error][NEW]', row.url, result.error);
-      }
-      console.log('[Scrape][NEW] Memory usage:', process.memoryUsage());
-    }
-
-    return NextResponse.json({ success: true });
+    const { url } = await req.json();
+    if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
+    const result = await scrapeUrl(url);
+    return NextResponse.json(result);
   } catch (e: any) {
     const errMsg = `[API Error] ${e?.message || e}`;
     console.error(errMsg, e?.stack || e);
