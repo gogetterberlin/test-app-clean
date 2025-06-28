@@ -63,7 +63,7 @@ function extractMainContent(document: Document): string | null {
   return null;
 }
 
-async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: string | null, status: number, main_content: string | null, meta_description: string | null, h1_heading: string | null }> {
+async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: string | null, status: number, main_content: string | null, meta_description: string | null, h1_heading: string | null, error?: string }> {
   try {
     const res = await fetch(url, { method: 'GET', redirect: 'follow' });
     const status = res.status;
@@ -78,7 +78,9 @@ async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: str
       const article = reader.parse();
       title = article?.title || null;
       main_content = article?.textContent || null;
-    } catch {}
+    } catch (e) {
+      console.error('[Readability Error]', url, e);
+    }
     // Fallbacks falls leer
     if (!title) title = extractTitle(doc);
     if (!main_content || main_content.length < 40) main_content = extractMainContent(doc);
@@ -93,9 +95,10 @@ async function fetchTitleStatusContentAndMeta(url: string): Promise<{ title: str
       meta_description: metaDescription,
       h1_heading: h1Heading,
     };
-  } catch (e) {
-    console.error('[Scrape Error]', url, e);
-    return { title: null, status: 0, main_content: null, meta_description: null, h1_heading: null };
+  } catch (e: any) {
+    const errMsg = `[Scrape Error] ${url} | ${e?.message || e}`;
+    console.error(errMsg, e?.stack || e);
+    return { title: null, status: 0, main_content: null, meta_description: null, h1_heading: null, error: errMsg + (e?.stack ? '\n' + e.stack : '') };
   }
 }
 
@@ -125,17 +128,25 @@ export async function POST(req: NextRequest) {
 
     // Scrape alt (maxRows)
     for (const row of limitedOld) {
-      const { title, status, main_content, meta_description, h1_heading } = await fetchTitleStatusContentAndMeta(row.url);
-      await supabase.from('urls').update({ title, status_code: status, main_content, meta_description, h1_heading }).eq('id', row.id);
+      const result = await fetchTitleStatusContentAndMeta(row.url);
+      await supabase.from('urls').update({ title: result.title, status_code: result.status, main_content: result.main_content, meta_description: result.meta_description, h1_heading: result.h1_heading }).eq('id', row.id);
+      if (result.error) {
+        console.error('[Scrape Error][OLD]', row.url, result.error);
+      }
     }
     // Scrape neu (ALLE neuen URLs, unabhängig von maxRows)
     for (const row of newUrls) {
-      const { title, status, main_content, meta_description, h1_heading } = await fetchTitleStatusContentAndMeta(row.url);
-      await supabase.from('urls').update({ title, status_code: status, main_content, meta_description, h1_heading }).eq('id', row.id);
+      const result = await fetchTitleStatusContentAndMeta(row.url);
+      await supabase.from('urls').update({ title: result.title, status_code: result.status, main_content: result.main_content, meta_description: result.meta_description, h1_heading: result.h1_heading }).eq('id', row.id);
+      if (result.error) {
+        console.error('[Scrape Error][NEW]', row.url, result.error);
+      }
     }
 
     return NextResponse.json({ success: true });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message || 'Unknown error' }, { status: 500 });
+    const errMsg = `[API Error] ${e?.message || e}`;
+    console.error(errMsg, e?.stack || e);
+    return NextResponse.json({ error: errMsg + (e?.stack ? '\n' + e.stack : '') }, { status: 500 });
   }
 } 
